@@ -71,6 +71,10 @@ export default function GroupView({
         return () => clearTimeout(t);
     }, [notice]);
 
+    useEffect(() => {
+        loadTasks();
+    }, [group.id]);
+
     const unresolvedCount = group.members.filter((m) => !m.scheduleShared).length;
 
     const loadTasks = async () => {
@@ -213,7 +217,7 @@ export default function GroupView({
                         <CardDescription>Mời bạn học bằng email HCMUT</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
                             {group.members.map((m) => (
                                 <div key={m.email} className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 min-w-0">
@@ -371,7 +375,7 @@ export default function GroupView({
                     ) : (
                         <>
                             <Progress value={progress} className="h-2" />
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 max-h-[480px] overflow-y-auto">
                                 {tasks.map((t) => {
                                     const overdue = Boolean(
                                         t.deadline &&

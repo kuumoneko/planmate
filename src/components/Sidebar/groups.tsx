@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import type { Group } from "@/types";
+import GroupCreateDialog from "@/components/groups/GroupCreateDialog";
 
 export default function Sidebar_Groups() {
     const { user, loading: userLoading } = useUser();
@@ -47,6 +49,15 @@ export default function Sidebar_Groups() {
                         : `${groups.length} nhóm của bạn`}
                 </span>
             </a>
+            <GroupCreateDialog
+                username={user?.username ?? ""}
+                onCreated={(g) => setGroups((prev) => [g, ...(prev ?? [])])}
+                trigger={
+                    <button className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-600/60 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-600">
+                        <Plus className="size-4" /> Thêm nhóm
+                    </button>
+                }
+            />
             {groups === null && (
                 <div className="flex flex-col gap-2">
                     {[0, 1].map((i) => (
@@ -59,7 +70,7 @@ export default function Sidebar_Groups() {
             )}
             {groups !== null && groups.length === 0 && (
                 <p className="text-xs text-[#64748b] dark:text-slate-400">
-                    Chưa tham gia nhóm nào. Tạo nhóm tại trang Nhóm.
+                    Chưa tham gia nhóm nào. Bấm Thêm nhóm để tạo.
                 </p>
             )}
             {groups !== null && groups.length > 0 && (

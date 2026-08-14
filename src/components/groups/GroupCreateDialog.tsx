@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,9 +19,11 @@ import { Group } from "@/types";
 export default function GroupCreateDialog({
     username,
     onCreated,
+    trigger,
 }: {
     username: string;
     onCreated: (group: Group) => void;
+    trigger?: ReactNode;
 }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
@@ -57,9 +59,11 @@ export default function GroupCreateDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <Users className="h-4 w-4 mr-2" /> Tạo nhóm
-                </Button>
+                {trigger ?? (
+                    <Button>
+                        <Users className="h-4 w-4 mr-2" /> Tạo nhóm
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>

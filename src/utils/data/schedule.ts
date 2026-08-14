@@ -1,0 +1,156 @@
+import { SubjectInfo } from "@/types/index";
+import get_web_schedule from "./hcmut/api/schedule";
+import get_exam from "./hcmut/api/exam";
+import { formatDate } from "@/types/day";
+import mongodb from "./databsae";
+import deepArrayEqual from "../array";
+import Logout from "../logout";
+
+/**
+ * Create fully schedule
+ */
+export default async function full_schedule(): Promise<SubjectInfo[]> {
+    try {
+        const token = localStorage.getItem("token") as string ?? ""
+        const isOffline = localStorage.getItem("offline") === "true" ? true : false;
+        if ((token.length === 0 || token === "undefined") && isOffline === false) {
+            Logout();
+            window.location.href = "/login";
+            return [];
+        }
+
+        let { username, MSSV, semester } = JSON.parse(localStorage.getItem("user") as string);
+
+        let mybk_schedule: SubjectInfo[] = [], database_schedule: SubjectInfo[] = [], filters: any[] = [];
+
+        const promises = [];
+        if (token.length !== 0 && token !== "undefined" && isOffline === false) {
+            promises.push((get_web_schedule(token, MSSV, semester)).then((res: any) => {
+                mybk_schedule = res;
+            })
+            )
+            // Auto-sync exams too, so the dashboard shows "lịch thi" after
+            // visiting the schedule page (matches the UI copy).
+            const year = String(semester).substring(0, 4);
+            const semester_type = String(semester).substring(4, 5);
+            promises.push(get_exam(token, MSSV, semester_type, year).then(async (res: any) => {
+                if (!Array.isArray(res)) return;
+                const cached = await mongodb("exam", "get", { username });
+                if (JSON.stringify(Array.isArray(cached) ? cached : []) !== JSON.stringify(res)) {
+                    mongodb("exam", "post", { username, data: res });
+                }
+            }))
+        }
+        promises.push(
+            mongodb("schedule", "get", { username: username }).then((res: any) => {
+                database_schedule = Array.isArray(res)
+                    ? res.filter((item: any) => typeof item !== "string")
+                    : [];
+            })
+        )
+        promises.push(mongodb("filter", "get", { username: username }).then((res: any) => {
+            filters = Array.isArray(res) ? res.filter((item: any) => item.semester === semester) : [];
+        })
+        )
+        await Promise.all(promises);
+        
+        if (mybk_schedule === null && database_schedule === null) {
+            window.location.href = "/down";
+        }
+        const Schedule = [...mybk_schedule, ...database_schedule].filter((item, index, self) =>
+            index === self.findIndex((t) => (
+                JSON.stringify(t, Object.keys(t).sort()) === JSON.stringify(item, Object.keys(item).sort())
+            ))
+        );
+
+        // Persist the fetched schedule whenever the database copy is missing
+        // or stale (the old deepArrayEqual(mybk, merged) guard skipped the very
+        // first sync because an empty database makes them equal).
+        if (mybk_schedule.length !== 0 && !deepArrayEqual(database_schedule, Schedule)) {
+            mongodb("schedule", "post", { username: username, data: Schedule });
+        }
+
+        const schedule: SubjectInfo[] = (token.length !== 0 && token !== "undefined" && isOffline === false) ? Schedule : database_schedule;
+
+        if (filters.length > 0) {
+            filters.sort((a: any, b: any) => {
+                const aKeys = Object.keys(a).length;
+                const bKeys = Object.keys(b).length;
+
+                const aPriority = aKeys > 2 ? 0 : 1;
+                const bPriority = bKeys > 2 ? 0 : 1;
+
+                return aPriority - bPriority;
+            }) as unknown as any[]
+
+            for (const filter of filters) {
+
+                const { class: class_code, dates, ...other_pre_params } = filter
+                if (Object.keys(other_pre_params).length > 1 && !(Object.keys(other_pre_params).length === 2 && Object.keys(other_pre_params).includes("building") && Object.keys(other_pre_params).includes("room"))) {
+                    schedule.push({
+                        class: class_code,
+                        dates: dates.map((item: string) => {
+                            const [year, month, day] = item.split("-").map(Number);
+                            return formatDate(year, month, day)
+                        }),
+                        ...filter
+                    })
+                    continue;
+                }
+                let subjects: SubjectInfo[] = schedule.filter((sub: SubjectInfo) => {
+                    return sub.class === class_code
+                });
+                const keys = Object.keys(other_pre_params);
+                let subject: SubjectInfo
+                if (keys.includes("date")) {
+                    subject = subjects.filter((sub: SubjectInfo) => sub.dates.includes(other_pre_params.date))[0];
+                }
+                else {
+                    subject = subjects[0];
+                }
+                if (keys.length > 0) {
+                    for (const key of keys) { // Iterate over keys of other_pre_params, not all keys
+                        if (key === "date") {
+                            const index = subject.dates.indexOf(other_pre_params[key]);
+                            if (index !== -1 && typeof subject.dates !== "string") {
+                                subject.dates[index] = filter[key]
+                            }
+                            continue;
+                        }
+                        (subject[key as keyof SubjectInfo] as any) = filter[key]
+                    }
+                }
+                else {
+                    schedule.push({
+                        class: class_code,
+                        ...filter
+                    })
+                }
+            }
+        }
+
+        const result = schedule.map((sub: SubjectInfo) => {
+            const dates = sub.dates;
+            if (typeof dates === "string") {
+                return {
+                    ...sub,
+                    dates: dates
+                }
+            }
+            const temp = dates.map((item: string) => {
+                const [year, month, day] = item.split("-").map(Number);
+                return formatDate(year, month, day);
+            })
+            return {
+                ...sub,
+                dates: temp
+            }
+        })
+
+        localStorage.setItem("schedule", JSON.stringify(result));
+        return result ?? [];
+    }
+    catch (e) {
+        return []
+    }
+}

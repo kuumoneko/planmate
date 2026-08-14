@@ -1,0 +1,68 @@
+import { handle_error } from "./error";
+import Logout from "./logout";
+
+/**
+ * fetch data from api
+ */
+export default async function fetch_data(
+    url: string,
+    headers?: HeadersInit,
+    body?: any): Promise<any> {
+    try {
+
+        if (url.length === 0) {
+            throw new Error("URL is empty");
+        }
+        let fetch_url = url;
+        // if (body) {
+        //     if (!url.includes("mongodb")) {
+        //         fetch_url += "?" + new URLSearchParams(body as Record<string, string>)
+        //     }
+        //     else {
+        //         fetch_url += `?doc=${body.doc}&mode=${body.mode}`;
+        //         fetch_url += `&data=${encodeURIComponent(JSON.stringify(body.data))}`
+        //     }
+        // }
+        let res: Response;
+        try {
+            res = await fetch(fetch_url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            })
+        }
+        catch (e) {
+            return [];
+        }
+
+        const { ok, data } = await res.json();
+        if (ok) {
+            return data ?? "ok";
+        }
+        else {
+            if (data === "Unauthorized") {
+                // An expired mybk session must not kill the whole app session:
+                // schedule/exam callers degrade to the cached database copy.
+                // Other endpoints (login, identity) still treat it as fatal.
+                if (url === "/api/mybk/api/schedule" || url === "/api/mybk/api/exam") {
+                    return "MYBK_UNAUTHORIZED";
+                }
+                Logout();
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+                window.location.href = "/login";
+            }
+            if (data === "INVALID_CREDENTIALS") {
+                alert("Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng thử lại.")
+            }
+            else if (res.status === 304) {
+                return "ok"
+            }
+            else {
+                handle_error(data)
+            }
+        }
+    }
+    catch (e: any) {
+        handle_error(e)
+    }
+}

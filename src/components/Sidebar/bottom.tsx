@@ -1,0 +1,71 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+const containerStyles = {
+    row: "max-w-[250px] flex-col",
+    col: "h-full flex-row",
+};
+
+const userDetailsStyles = {
+    row: "flex-col w-full",
+    col: "flex-row w-full",
+};
+
+const columnOneStyles = {
+    row: "w-full",
+    col: "w-[40%]",
+};
+
+const columnTwoStyles = {
+    row: "w-full",
+    col: "w-[60%]",
+};
+
+export default function Sidebar_Bottom({ mode }: { mode: "row" | "col" }) {
+    const [user, setUser] = useState({
+        name: null,
+        MSSV: null,
+        class: null,
+        status: null,
+        major: null,
+        teachingDep: null,
+    });
+
+    useEffect(() => {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, []);
+
+    return (
+        <div
+            className={`w-full mt-4 bg-slate-700 text-white rounded-3xl p-5 flex items-center justify-between ${containerStyles[mode]}`}
+        >
+            {!user.name ? (
+                <div>
+                    <span>
+                        {
+                            "Chưa đăng nhập, hãy đăng nhập bằng cách chọn Cài đặt -> Tài khoản HCMUT"
+                        }
+                    </span>
+                </div>
+            ) : (
+                <div className={`flex ${userDetailsStyles[mode]}`}>
+                    <div className={`flex flex-col ${columnOneStyles[mode]}`}>
+                        <span className="mb-2">{user.name}</span>
+                        <span className="mt-2">MSSV: {user.MSSV}</span>
+                        <span className="mt-2">Lớp: {user.class}</span>
+                        <span className="mt-2">Tình trạng: {user.status}</span>
+                    </div>
+
+                    <div className={`flex flex-col ${columnTwoStyles[mode]}`}>
+                        <span className="mt-4">{user.major}</span>
+                        <span className="mt-3">{user.teachingDep}</span>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

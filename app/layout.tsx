@@ -1,47 +1,21 @@
-import { CartProvider } from "components/cart/cart-context";
-import { Navbar } from "components/layout/navbar";
-import { WelcomeToast } from "components/welcome-toast";
-import { GeistSans } from "geist/font/sans";
-import { getCart } from "lib/shopify";
-import { ReactNode } from "react";
-import { Toaster } from "sonner";
-import "./globals.css";
-import { baseUrl } from "lib/utils";
+import "@/styles/globals.css";
+import type { Metadata } from "next";
 
-const { SITE_NAME } = process.env;
-
-export const metadata = {
-  metadataBase: new URL(baseUrl),
-  title: {
-    default: SITE_NAME!,
-    template: `%s | ${SITE_NAME}`,
-  },
-  robots: {
-    follow: true,
-    index: true,
-  },
+/**
+ * Root layout for the App Router tree (login, dashboard, ...).
+ * The legacy Pages Router tree keeps its own template (pages/template.tsx).
+ * Class "app-root" on <body> scopes the legacy full-page centering rules
+ * out of the App Router pages (see src/styles/globals.css).
+ */
+export const metadata: Metadata = {
+    title: "BK Calendar",
+    description: "Lịch học, lịch thi và quản lý nhóm BTL cho sinh viên HCMUT",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  // Don't await the fetch, pass the Promise to the context provider
-  const cart = getCart();
-
-  return (
-    <html lang="en" className={GeistSans.variable}>
-      <body className="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white">
-        <CartProvider cartPromise={cart}>
-          <Navbar />
-          <main>
-            {children}
-            <Toaster closeButton />
-            <WelcomeToast />
-          </main>
-        </CartProvider>
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="vi">
+            <body className="app-root antialiased">{children}</body>
+        </html>
+    );
 }

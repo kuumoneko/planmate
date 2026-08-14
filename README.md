@@ -1,75 +1,89 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fcommerce&project-name=commerce&repo-name=commerce&demo-title=Next.js%20Commerce&demo-url=https%3A%2F%2Fdemo.vercel.store&demo-image=https%3A%2F%2Fbigcommerce-demo-asset-ksvtgfvnd.vercel.app%2Fbigcommerce.png&products=%255B%257B%2522type%2522%253A%2522integration%2522%252C%2522protocol%2522%253A%2522other%2522%252C%2522productSlug%2522%253A%2522shopify%2522%252C%2522integrationSlug%2522%253A%2522shopify%2522%257D%255D&env=COMPANY_NAME,SITE_NAME)
+# BK Calendar
 
-# Next.js Commerce
+> A web built on Next.js to see schedule and manage subjects for studying in HCMUT - VNUHCM.
+> Version: 8.2.0
 
-A high-performance, server-rendered Next.js App Router ecommerce application.
+## Tech Stack
 
-This template uses React Server Components, Server Actions, `Suspense`, `useOptimistic`, and more.
+- **Runtime / Package manager**: [Bun](https://bun.sh) (>= 1.3)
+- **Framework**: Next.js 15 (Pages Router) + TypeScript
+- **UI**: Tailwind CSS v4, [shadcn/ui](https://ui.shadcn.com), Lucide Icons
+- **Database**: MongoDB (`mongodb` driver via `@vercel/functions`)
+- **Calendar**: RFC 5545 `.ics` builder (no dependency) + `googleapis` (optional, flag-gated)
 
-<h3 id="v1-note"></h3>
-
-> Note: Looking for Next.js Commerce v1? View the [code](https://github.com/vercel/commerce/tree/v1), [demo](https://commerce-v1.vercel.store), and [release notes](https://github.com/vercel/commerce/releases/tag/v1).
-
-## Providers
-
-Vercel will only be actively maintaining a Shopify version [as outlined in our vision and strategy for Next.js Commerce](https://github.com/vercel/commerce/pull/966).
-
-Vercel is happy to partner and work with any commerce provider to help them get a similar template up and running and listed below. Alternative providers should be able to fork this repository and swap out the `lib/shopify` file with their own implementation while leaving the rest of the template mostly unchanged.
-
-- Shopify (this repository)
-- [BigCommerce](https://github.com/bigcommerce/nextjs-commerce) ([Demo](https://next-commerce-v2.vercel.app/))
-- [Ecwid by Lightspeed](https://github.com/Ecwid/ecwid-nextjs-commerce/) ([Demo](https://ecwid-nextjs-commerce.vercel.app/))
-- [Geins](https://github.com/geins-io/vercel-nextjs-commerce) ([Demo](https://geins-nextjs-commerce-starter.vercel.app/))
-- [Medusa](https://github.com/medusajs/vercel-commerce) ([Demo](https://medusa-nextjs-commerce.vercel.app/))
-- [Prodigy Commerce](https://github.com/prodigycommerce/nextjs-commerce) ([Demo](https://prodigy-nextjs-commerce.vercel.app/))
-- [Saleor](https://github.com/saleor/nextjs-commerce) ([Demo](https://saleor-commerce.vercel.app/))
-- [Shopware](https://github.com/shopwareLabs/vercel-commerce) ([Demo](https://shopware-vercel-commerce-react.vercel.app/))
-- [Swell](https://github.com/swellstores/verswell-commerce) ([Demo](https://verswell-commerce.vercel.app/))
-- [Umbraco](https://github.com/umbraco/Umbraco.VercelCommerce.Demo) ([Demo](https://vercel-commerce-demo.umbraco.com/))
-- [Wix](https://github.com/wix/headless-templates/tree/main/nextjs/commerce) ([Demo](https://wix-nextjs-commerce.vercel.app/))
-- [Fourthwall](https://github.com/FourthwallHQ/vercel-commerce) ([Demo](https://vercel-storefront.fourthwall.app/))
-
-> Note: Providers, if you are looking to use similar products for your demo, you can [download these assets](https://drive.google.com/file/d/1q_bKerjrwZgHwCw0ovfUMW6He9VtepO_/view?usp=sharing).
-
-## Integrations
-
-Integrations enable upgraded or additional functionality for Next.js Commerce
-
-- [Orama](https://github.com/oramasearch/nextjs-commerce) ([Demo](https://vercel-commerce.oramasearch.com/))
-
-  - Upgrades search to include typeahead with dynamic re-rendering, vector-based similarity search, and JS-based configuration.
-  - Search runs entirely in the browser for smaller catalogs or on a CDN for larger.
-
-- [React Bricks](https://github.com/ReactBricks/nextjs-commerce-rb) ([Demo](https://nextjs-commerce.reactbricks.com/))
-  - Edit pages, product details, and footer content visually using [React Bricks](https://www.reactbricks.com) visual headless CMS.
-
-## Running locally
-
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js Commerce. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables) for this, but a `.env` file is all that is necessary.
-
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control your Shopify store.
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+## Setup
 
 ```bash
-pnpm install
-pnpm dev
+# 1. Install Bun (Windows PowerShell):
+powershell -c "irm bun.sh/install.ps1 | iex"
+
+# 2. Install dependencies (generates bun.lock):
+bun install
+
+# 3. Configure environment (.env.local):
+MONGODB_URI=mongodb+srv://...
+# Optional — Google Calendar auto-sync:
+NEXT_PUBLIC_GOOGLE_CALENDAR_ENABLED=true
+GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=xxxx
+GOOGLE_REDIRECT_URI=https://your-app.vercel.app/api/google/callback
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+
+# 4. Run:
+bun run dev
 ```
 
-Your app should now be running on [localhost:3000](http://localhost:3000/).
+### Scripts (all Bun)
 
-<details>
-  <summary>Expand if you work at Vercel and want to run locally and / or contribute</summary>
+| Script | Command |
+|---|---|
+| dev | `PORT=3005 bun --bun next dev` |
+| build | `bun --bun next build` |
+| start | `PORT=3005 bun --bun next start` |
+| test | `bun test` (Bun's built-in test runner) |
+| typecheck | `bun --bun tsc --noEmit` |
 
-1. Run `vc link`.
-1. Select the `Vercel Solutions` scope.
-1. Connect to the existing `commerce-shopify` project.
-1. Run `vc env pull` to get environment variables.
-1. Run `pnpm dev` to ensure everything is working correctly.
-</details>
+## Features
 
-## Vercel, Next.js Commerce, and Shopify Integration Guide
+- **HCMUT SSO login** (CAS via mybk) + offline cache when mybk is down.
+- **Dashboard** (`/dashboard`): today's classes, exam countdown, group deadlines.
+- **Weekly timetable grid** (`/schedule`): interactive Monday-Sunday × 06:00-22:00 grid with course details on hover.
+- **Exam schedule** (`/exam`).
+- **Export** (`/export`):
+  - CSV import (Google Calendar legacy flow),
+  - `.ics` download for Apple Calendar / Outlook,
+  - **Webcal subscription URL**: `webcal://{host}/api/calendar/{mssv}.ics` (auto-updates from the server cache),
+  - **Google Calendar OAuth sync** (flag-gated, see below).
+- **Study groups (BTL)** (`/groups`):
+  - Create groups, invite members by `@hcmut.edu.vn` email,
+  - **Common free-time finder** (compares every member's cached schedule, 07:00-21:00 window, min 30 min slots),
+  - Task & deadline manager with progress bar,
+  - Creating a deadline auto-builds an invite `.ics` with all members as attendees, and pushes to Google Calendar when enabled.
 
-You can use this comprehensive [integration guide](https://vercel.com/docs/integrations/ecommerce/shopify) with step-by-step instructions on how to configure Shopify as a headless CMS using Next.js Commerce as your headless Shopify storefront on Vercel.
+## Google Calendar Sync (optional)
+
+The OAuth flow is disabled unless `NEXT_PUBLIC_GOOGLE_CALENDAR_ENABLED=true` and
+`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are set.
+
+1. Create a project at https://console.cloud.google.com, enable the **Google Calendar API**.
+2. Create an **OAuth client (Web)**, authorize `https://www.googleapis.com/auth/calendar.events`,
+   and set the redirect URI to `{APP_URL}/api/google/callback`.
+3. Set the env vars above. Users click "Kết nối Google Calendar" on `/export` to authorize.
+
+Behaviour when enabled:
+- Classes → recurring events (`RRULE` weekly + `EXDATE` for mid-semester breaks), 30-min popup reminder.
+- Exams → one-shot events, 1-day email reminder.
+- Group deadlines → event invites to all members (pushed via the leader's account).
+
+## Vercel Deployment
+
+- Set `BUN_VERSION=1.3.x` in project settings so installs use `bun install`.
+- The Vercel runtime is always Node — production behaviour is identical to a Node build.
+
+## IMPORTANT
+
+> This web app is for educational purpose only.
+>
+> Do not use this web app for any illegal activity.
+>
+> Please check again with the source on mybk.hcmut.edu.vn/app before using the schedule from this web.

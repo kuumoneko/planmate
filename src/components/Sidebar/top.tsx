@@ -1,0 +1,62 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faCalendarCheck,
+    faCalendarDays,
+    faFilter,
+    faHouse,
+    faUserGroup,
+} from "@fortawesome/free-solid-svg-icons";
+import { useOrientationMode } from "@/hooks/display";
+
+function Side_bar_Button({ text, url }: { text: string; url: string }) {
+    const mode = useOrientationMode();
+    const Font_Awesome: any = {
+        "Tổng quan": faHouse,
+        "Lịch thi": faCalendarCheck,
+        "Thời khoá biểu": faCalendarDays,
+        "Nhóm học tập": faUserGroup,
+        "Bộ lọc": faFilter,
+    };
+    return (
+        <li
+            className={`cursor-default select-none h-12.5 w-50 rounded-xl flex flex-row items-center ${
+                mode === "col" ? "justify-center " : "justify-start "
+            } bg-slate-700 pl-3.75 hover:bg-slate-600 hover:cursor-pointer`}
+            onClick={() => {
+                window.location.href = url;
+            }}
+        >
+            <FontAwesomeIcon
+                icon={Font_Awesome[text]}
+                className="text-slate-300 mr-1.25 pb-1.25"
+            />
+            <span className="text-neutral-400 no-underline">{text}</span>
+        </li>
+    );
+}
+
+export default function Sidebar_Top({ mode }: { mode: "row" | "col" }) {
+    return (
+        <div
+            className={`w-full ${
+                mode === "row" ? "max-w-62.5 p-7" : "h-[40%] p-2"
+            } bg-slate-700 text-white rounded-3xl`}
+        >
+            <div className="navigation">
+                <ul
+                    className={`list-none p-0 m-0 ${
+                        mode === "col"
+                            ? "flex flex-row items-center justify-evenly"
+                            : ""
+                    }`}
+                >
+                    <Side_bar_Button text="Tổng quan" url="/dashboard" />
+                    <Side_bar_Button text="Lịch thi" url="/exam" />
+                    <Side_bar_Button text="Thời khoá biểu" url="/schedule" />
+                    <Side_bar_Button text="Nhóm học tập" url="/groups" />
+                    <Side_bar_Button text="Bộ lọc" url="/filter" />
+                </ul>
+            </div>
+        </div>
+    );
+}

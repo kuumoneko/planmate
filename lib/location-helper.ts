@@ -4,6 +4,8 @@
  * HCMUT convention (this app's contract):
  *   - Room codes starting with "H" (H1-201, H6-302, ...) belong to
  *     **Cơ sở 2 - Dĩ An, Bình Dương**.
+ *   - Rooms at **DHQG-HT.TRANCHIDAO** (Trần Chí Đạo, trong khu ĐHQG-HCM) are
+ *     gần Cơ sở 2, nên cũng được xem là **CS2**.
  *   - Every other room code (B11-101, GĐ-104, NHATHIDAU, ...) belongs to
  *     **Cơ sở 1 - 268 Lý Thường Kiệt, Q.10**.
  *
@@ -21,7 +23,8 @@ export const CAMPUS_ADDRESSES: Record<Campus, string> = {
 
 /** Map an HCMUT room code to its campus. */
 export function campusFromRoom(room: string): Campus {
-    return /^H\d/.test(room.trim()) ? "CS2" : "CS1";
+    const r = room.trim();
+    return /^H\d/.test(r) || /TRANCHIDAO/i.test(r) ? "CS2" : "CS1";
 }
 
 /** Full display address of a campus. */

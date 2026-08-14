@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CAMPUS_ADDRESSES } from "../../../lib/location-helper";
+import { CAMPUS_ADDRESSES, campusFromRoom } from "../../../lib/location-helper";
 
 const DAY_NAMES = [
     "",
@@ -56,10 +56,6 @@ const SOURCE_LABEL: Record<
     live: { text: "Dữ liệu thật", variant: "default" },
     none: { text: "Chưa có dữ liệu", variant: "outline" },
 };
-
-function campusOf(room: string): "CS1" | "CS2" {
-    return /^H\d/.test(room.trim()) ? "CS2" : "CS1";
-}
 
 export default function DashboardClient({ studentId }: { studentId: string }) {
     const { user, loading: userLoading } = useUser();
@@ -304,7 +300,7 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                                         </p>
                                     </div>
                                     <Badge variant="secondary">
-                                        {campusOf(c.room) === "CS2"
+                                        {campusFromRoom(c.room) === "CS2"
                                             ? "CS2"
                                             : "CS1"}
                                     </Badge>

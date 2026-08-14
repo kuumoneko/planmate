@@ -15,6 +15,12 @@ describe("campusFromRoom", () => {
         expect(campusFromRoom(" H2-101 ")).toBe("CS2");
     });
 
+    it("maps DHQG-HT.TRANCHIDAO (gần CS2) to CS2", () => {
+        expect(campusFromRoom("DHQG-HT.TRANCHIDAO")).toBe("CS2");
+        expect(campusFromRoom("dhqg-ht.tranchidao")).toBe("CS2");
+        expect(campusFromRoom(" DHQG-HT.TRANCHIDAO ")).toBe("CS2");
+    });
+
     it("maps every other room to CS1", () => {
         expect(campusFromRoom("B11-101")).toBe("CS1");
         expect(campusFromRoom("GĐ-104")).toBe("CS1");
@@ -71,6 +77,14 @@ describe("detectCampusTravelConflict", () => {
             course(1, "B11-101", "CO3001"),
             course(1, "B11-201", "MT1001"),
             course(2, "H6-302", "HH2001"),
+        ]);
+        expect(conflicts).toEqual([]);
+    });
+
+    it("does not flag DHQG-HT.TRANCHIDAO next to an H-room (both CS2)", () => {
+        const conflicts = detectCampusTravelConflict([
+            course(4, "H6-GDH6", "SSH1001"),
+            course(4, "DHQG-HT.TRANCHIDAO", "SSH1002"),
         ]);
         expect(conflicts).toEqual([]);
     });

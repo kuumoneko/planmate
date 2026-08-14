@@ -162,7 +162,7 @@ export default function GroupView({
     const progress = tasks && tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
 
     return (
-        <div className="w-full h-full overflow-y-auto p-4 flex flex-col gap-4">
+        <div className="w-full h-full lg:overflow-hidden overflow-y-auto p-4 flex flex-col gap-4">
             {/* Header */}
             <div className="flex items-start justify-between flex-wrap gap-2">
                 <div>
@@ -209,15 +209,15 @@ export default function GroupView({
 
             {notice && <p className="text-sm text-amber-600">{notice}</p>}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:flex-1 lg:min-h-0">
                 {/* Members */}
-                <Card>
+                <Card className="lg:h-full lg:flex lg:flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">Thành viên ({group.members.length})</CardTitle>
                         <CardDescription>Mời bạn học bằng email HCMUT</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                    <CardContent className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
+                        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0">
                             {group.members.map((m) => (
                                 <div key={m.email} className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 min-w-0">
@@ -286,7 +286,7 @@ export default function GroupView({
                 </Card>
 
                 {/* Free time */}
-                <Card className="lg:col-span-2">
+                <Card className="lg:col-span-2 lg:h-full lg:flex lg:flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Clock className="h-5 w-5" /> Lịch trống chung
@@ -295,7 +295,7 @@ export default function GroupView({
                             So sánh thời khóa biểu của các thành viên (khung 07:00 - 21:00)
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col gap-3">
+                    <CardContent className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
                         <div className="flex items-center gap-2">
                             <Button size="sm" onClick={findFreeTime} disabled={freeLoading}>
                                 <CalendarClock className="h-4 w-4 mr-2" />
@@ -308,6 +308,7 @@ export default function GroupView({
                             )}
                         </div>
 
+                        <div className="flex flex-col gap-3 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
                         {slots === null ? (
                             <p className="text-sm text-muted-foreground">
                                 Nhấn “Tìm lịch trống” để xem khoảng thời gian cả nhóm rảnh trong tuần.
@@ -336,12 +337,13 @@ export default function GroupView({
                                 })}
                             </div>
                         )}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
             {/* Tasks */}
-            <Card>
+            <Card className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center justify-between">
                         <span className="flex items-center gap-2">
@@ -364,7 +366,7 @@ export default function GroupView({
                             : "Đánh dấu tiến độ công việc của nhóm."}
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-3">
+                <CardContent className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
                     {tasks === null ? (
                         <div className="flex flex-col gap-2">
                             <Skeleton className="h-10 w-full" />
@@ -375,7 +377,7 @@ export default function GroupView({
                     ) : (
                         <>
                             <Progress value={progress} className="h-2" />
-                            <div className="flex flex-col gap-2 max-h-[480px] overflow-y-auto">
+                            <div className="flex flex-col gap-2 max-h-[480px] overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0">
                                 {tasks.map((t) => {
                                     const overdue = Boolean(
                                         t.deadline &&

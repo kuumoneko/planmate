@@ -22,18 +22,20 @@ export default function Template({ children }: { children: React.ReactNode }) {
     return (
         <div
             className={
-                "flex flex-col bg-slate-900 h-screen w-screen items-center justify-center m-0 p-0 select-none cursor-default"
+                "flex flex-col bg-slate-900 h-screen h-dvh w-screen items-center justify-center m-0 p-0 select-none cursor-default overflow-hidden"
             }
         >
-            <div className="flex flex-col bg-slate-900 h-full w-full items-center justify-start m-0 p-0 select-none cursor-default">
+            <div className="flex flex-col bg-slate-900 h-full w-full items-center justify-start m-0 p-0 select-none cursor-default min-h-0">
                 <Nav />
                 <div
                     className={`flex ${
                         mode === "row" ? "flex-row" : "flex-col"
-                    } h-[85%] w-[95%] mt-3.75`}
+                    } flex-1 min-h-0 w-[95%] mt-3.75`}
                 >
                     <Sidebar mode={mode} />
-                    {children && children}
+                    <main className="flex-1 min-h-0 min-w-0 flex flex-col">
+                        {children && children}
+                    </main>
                 </div>
                 <Footer />
             </div>

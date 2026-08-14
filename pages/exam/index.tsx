@@ -22,9 +22,9 @@ export default function Exam_Schedule() {
         run();
     }, []);
     return (
-        <div className="h-full w-full flex flex-col justify-center items-center">
+        <div className="h-full w-full flex flex-col justify-center items-center overflow-y-auto">
             <span>Lịch thi</span>
-            <div className="w-[90%]">
+            <div className="w-[90%] overflow-x-auto">
                 {data.length > 0 ? (
                     <table className="w-full text-center mt-5 rounded-3xl min-w-125">
                         <thead>

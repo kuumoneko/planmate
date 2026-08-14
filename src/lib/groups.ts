@@ -217,12 +217,75 @@ export async function resolveUserByEmail(
     };
 }
 
+/** Resolve an app username to its profile (for adding members from the DB). */
+export async function resolveUserByUsername(username: string): Promise<{
+    username: string;
+    mssv: string;
+    fullName: string;
+    email: string;
+} | null> {
+    const { data } = await collections();
+    const doc = await data.findOne(
+        { username },
+        { projection: { _id: 0, username: 1, user: 1 } }
+    );
+    if (!doc) return null;
+    return {
+        username: doc.username,
+        mssv: doc.user?.MSSV ?? doc.user?.id ?? "",
+        fullName: doc.user?.name ?? doc.username,
+        email: doc.user?.email ?? `${doc.username}@hcmut.edu.vn`,
+    };
+}
+
+/** Search the app user database (name / username / email / MSSV). */
+export async function searchUsers(
+    query: string,
+    excludeEmails: string[],
+    limit = 20
+): Promise<{
+    username: string;
+    fullName: string;
+    mssv: string;
+    email: string;
+}[]> {
+    const term = query.trim().toLowerCase();
+    const { data } = await collections();
+    const docs = await data
+        .find(
+            {},
+            { projection: { _id: 0, username: 1, user: 1 }, limit }
+        )
+        .toArray();
+    const excluded = new Set(excludeEmails.map((e) => e.toLowerCase()));
+    return docs
+        .filter((doc: any) => {
+            const email = String(doc?.user?.email ?? "").toLowerCase();
+            const name = String(doc?.user?.name ?? "").toLowerCase();
+            const mssv = String(doc?.user?.MSSV ?? "").toLowerCase();
+            const username = String(doc?.username ?? "").toLowerCase();
+            if (email && excluded.has(email)) return false;
+            if (term.length === 0) return Boolean(email);
+            return (
+                name.includes(term) ||
+                username.includes(term) ||
+                mssv.includes(term) ||
+                email.includes(term)
+            );
+        })
+        .map((doc: any) => ({
+            username: doc.username,
+            fullName: doc.user?.name ?? doc.username,
+            mssv: doc.user?.MSSV ?? doc.user?.id ?? "",
+            email: doc.user?.email ?? `${doc.username}@hcmut.edu.vn`,
+        }));
+}
+
 export async function addMember(
     group: Group,
     email: string,
     resolved: { username: string; mssv: string; fullName: string } | null
-): Promise<Group> {
-    const { groups } = await collections();
+): Promise<Group> {    const { groups } = await collections();
     const member: GroupMember = {
         studentId: resolved?.mssv ?? email.split("@")[0],
         email,

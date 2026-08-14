@@ -1,6 +1,6 @@
 export default function Footer() {
     return (
-        <div className="text-center pt-4 text-sm text-gray-400 h-[6%] w-full mt-4">
+        <div className="text-center pt-4 text-sm text-gray-400 h-[6%] w-full shrink-0 mt-4">
             <p>
                 Xem thời khoá biểu và lịch học của
                 cho sinh viên trường Đại học Bách khoa - Đại học Quốc gia TP.HCM

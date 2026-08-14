@@ -40,7 +40,7 @@ export default function Page() {
     const [building, setbuilding] = useState("");
 
     return (
-        <div className="h-full w-full flex flex-col items-center justify-center">
+        <div className="h-full w-full flex flex-col items-center justify-start overflow-y-auto">
             <span className="text-2xl">Add subject</span>
             <div>
                 <div className="mb-3">

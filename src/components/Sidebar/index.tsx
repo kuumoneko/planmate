@@ -8,7 +8,7 @@ export default function Sidebar({ mode }: { mode: "row" | "col" }) {
     };
     return (
         <div
-            className={`flex flex-col ${height} ${width} items-start justify-evenly mb-2 min-h-0 overflow-y-auto`}
+            className={`flex flex-col ${height} ${width} shrink-0 items-start justify-evenly mb-2 min-h-0 overflow-y-auto`}
         >
             <Sidebar_Top mode={mode} />
             <Sidebar_Groups />

@@ -24,7 +24,7 @@ export default function Nav() {
               }).format(new Date());
 
     return (
-        <div className="nav bg-slate-700 h-[5%] w-[90%] flex justify-between items-center rounded-full p-6 mt-2.5">
+        <div className="nav bg-slate-700 h-[5%] w-[90%] shrink-0 flex justify-between items-center rounded-full p-6 mt-2.5">
             <div
                 className="title"
                 onClick={() => {

@@ -64,7 +64,7 @@ export default function Page() {
     }, []);
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="w-full h-full flex flex-col items-center justify-start overflow-y-auto">
             <div className="flex flex-col h-[10%] text-2xl font-bold">
                 <span>{data?.subject}</span>
             </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     CalendarClock,
     Check,
@@ -9,6 +9,7 @@ import {
     Plus,
     RefreshCw,
     Trash2,
+    TriangleAlert,
     UserMinus,
     UserPlus,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskCreateDialog from "./TaskCreateDialog";
+import AddMemberDialog from "./AddMemberDialog";
 import { api } from "@/utils/api";
 import { FreeTimeSlot, Group, Task } from "@/types";
 
@@ -61,6 +63,15 @@ export default function GroupView({
     const [freeLoading, setFreeLoading] = useState(false);
     const [inviteEmail, setInviteEmail] = useState("");
     const [error, setError] = useState("");
+    const [notice, setNotice] = useState("");
+
+    useEffect(() => {
+        if (!notice) return;
+        const t = setTimeout(() => setNotice(""), 6000);
+        return () => clearTimeout(t);
+    }, [notice]);
+
+    const unresolvedCount = group.members.filter((m) => !m.scheduleShared).length;
 
     const loadTasks = async () => {
         try {
@@ -101,6 +112,11 @@ export default function GroupView({
             );
             setInviteEmail("");
             onGroupChanged(data.group);
+            setNotice(
+                data.resolved
+                    ? "Đã thêm thành viên. Nhắc họ đăng nhập vào web này để đồng bộ lịch học."
+                    : `Đã thêm ${inviteEmail}. Tài khoản này chưa đăng nhập — thành viên phải đăng nhập vào web này ít nhất 1 lần để đồng bộ lịch học.`
+            );
         } catch (e: any) {
             setError(e.message);
         }
@@ -173,6 +189,22 @@ export default function GroupView({
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
+            {unresolvedCount > 0 && (
+                <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-600">
+                    <TriangleAlert className="h-4 w-4 mt-0.5 shrink-0" />
+                    <p>
+                        <span className="font-medium">
+                            Có {unresolvedCount} thành viên chưa đăng nhập vào web này.
+                        </span>{" "}
+                        Mọi thành viên phải đăng nhập ít nhất 1 lần để đồng bộ lịch học — nếu
+                        không, họ sẽ hiện là “chưa có lịch” và bị bỏ qua khi tìm lịch trống
+                        chung / giao việc.
+                    </p>
+                </div>
+            )}
+
+            {notice && <p className="text-sm text-amber-600">{notice}</p>}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Members */}
                 <Card>
@@ -222,16 +254,28 @@ export default function GroupView({
                             ))}
                         </div>
                         {isLeader && (
-                            <div className="flex gap-2 pt-2 border-t">
-                                <Input
-                                    value={inviteEmail}
-                                    onChange={(e) => setInviteEmail(e.target.value)}
-                                    placeholder="mssv@hcmut.edu.vn"
-                                    onKeyDown={(e) => e.key === "Enter" && invite()}
+                            <div className="flex flex-col gap-2 pt-2 border-t">
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={inviteEmail}
+                                        onChange={(e) => setInviteEmail(e.target.value)}
+                                        placeholder="mssv@hcmut.edu.vn"
+                                        onKeyDown={(e) => e.key === "Enter" && invite()}
+                                    />
+                                    <Button variant="outline" size="icon" onClick={invite}>
+                                        <UserPlus className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <AddMemberDialog
+                                    group={group}
+                                    identity={identity}
+                                    onAdded={(g) => {
+                                        onGroupChanged(g);
+                                        setNotice(
+                                            "Đã thêm thành viên. Nhắc họ đăng nhập vào web này để đồng bộ lịch học."
+                                        );
+                                    }}
                                 />
-                                <Button variant="outline" size="icon" onClick={invite}>
-                                    <UserPlus className="h-4 w-4" />
-                                </Button>
                             </div>
                         )}
                     </CardContent>

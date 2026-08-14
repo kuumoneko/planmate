@@ -65,7 +65,7 @@ export default function Filter() {
     }, [class_code]);
 
     return (
-        <div className="flex flex-col items-center justify-start h-full w-full mt-4 ml-4">
+        <div className="flex flex-col items-center justify-start h-full w-full mt-4 ml-4 overflow-y-auto">
             <div className="h-[10%] w-full flex flex-col items-center justify-center">
                 <div className="text-4xl">Bộ lọc</div>
             </div>

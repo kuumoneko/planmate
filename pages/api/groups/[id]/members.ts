@@ -1,10 +1,21 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { addMember, getGroup, HCMUT_EMAIL_RE, isLeaderOf, removeMember, resolveUserByEmail } from "@/lib/groups";
+import {
+    addMember,
+    getGroup,
+    HCMUT_EMAIL_RE,
+    isLeaderOf,
+    removeMember,
+    resolveUserByEmail,
+    resolveUserByUsername,
+    searchUsers,
+} from "@/lib/groups";
 
 /**
  * /api/groups/[id]/members
- *  POST   {studentId?, username?, email}  -> invite member by HCMUT email (leader only)
- *  DELETE {studentId?, username?, email}  -> remove member (leader or self)
+ *  GET    ?q=<term>         -> search app users (leader only)
+ *  POST   {studentId?, username?, email}    -> invite member by HCMUT email (leader only)
+ *  POST   {studentId?, username?, username} -> add member picked from the database (leader only)
+ *  DELETE {studentId?, username?, email}    -> remove member (leader or self)
  * Identity is MSSV first (`studentId`), `username` accepted as fallback.
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,36 +25,70 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(404).json({ ok: false, data: "Group not found" });
         }
 
-        const identity = String(req.body?.studentId ?? req.body?.username ?? "").trim();
-        const email = String(req.body?.email ?? "").trim().toLowerCase();
-        if (!identity || !email) {
-            return res.status(400).json({ ok: false, data: "studentId/username and email are required" });
+        const identity = String(
+            req.query.studentId ?? req.query.username ?? req.body?.studentId ?? req.body?.username ?? ""
+        ).trim();
+        if (!identity && req.method !== "GET") {
+            return res.status(400).json({ ok: false, data: "studentId/username are required" });
         }
-        if (!HCMUT_EMAIL_RE.test(email)) {
-            return res.status(400).json({
-                ok: false,
-                data: "Email phải là email HCMUT (@hcmut.edu.vn)",
-            });
+        const isLeader = isLeaderOf(group, identity);
+
+        if (req.method === "GET") {
+            if (!isLeader) {
+                return res.status(403).json({ ok: false, data: "Chỉ trưởng nhóm xem danh sách người dùng" });
+            }
+            const q = String(req.query.q ?? "").trim();
+            const users = await searchUsers(q, group.members.map((m) => m.email));
+            return res.status(200).json({ ok: true, data: { users } });
         }
 
-        const isLeader = isLeaderOf(group, identity);
+        const email = String(req.body?.email ?? "").trim().toLowerCase();
 
         if (req.method === "POST") {
             if (!isLeader) {
                 return res.status(403).json({ ok: false, data: "Chỉ trưởng nhóm mời thành viên" });
             }
-            if (group.members.some((m) => m.email === email)) {
+
+            if (email.length > 0) {
+                if (!HCMUT_EMAIL_RE.test(email)) {
+                    return res.status(400).json({
+                        ok: false,
+                        data: "Email phải là email HCMUT (@hcmut.edu.vn)",
+                    });
+                }
+                if (group.members.some((m) => m.email === email)) {
+                    return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });
+                }
+                const resolved = await resolveUserByEmail(email);
+                const updated = await addMember(group, email, resolved);
+                return res.status(200).json({
+                    ok: true,
+                    data: { group: updated, resolved: Boolean(resolved) },
+                });
+            }
+
+            const memberUsername = String(req.body?.memberUsername ?? "").trim();
+            if (memberUsername.length === 0) {
+                return res.status(400).json({ ok: false, data: "email or memberUsername are required" });
+            }
+            const resolved = await resolveUserByUsername(memberUsername);
+            if (!resolved) {
+                return res.status(404).json({ ok: false, data: "Không tìm thấy người dùng trong cơ sở dữ liệu" });
+            }
+            if (group.members.some((m) => m.email === resolved.email)) {
                 return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });
             }
-            const resolved = await resolveUserByEmail(email);
-            const updated = await addMember(group, email, resolved);
+            const updated = await addMember(group, resolved.email, resolved);
             return res.status(200).json({
                 ok: true,
-                data: { group: updated, resolved: Boolean(resolved) },
+                data: { group: updated, resolved: true },
             });
         }
 
         if (req.method === "DELETE") {
+            if (!email) {
+                return res.status(400).json({ ok: false, data: "email are required" });
+            }
             const member = group.members.find((m) => m.email === email);
             if (!member) {
                 return res.status(404).json({ ok: false, data: "Thành viên không tồn tại" });

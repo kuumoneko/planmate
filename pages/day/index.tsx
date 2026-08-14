@@ -155,11 +155,12 @@ export default function Day() {
     const mode = useOrientationMode();
 
     return (
-        <div
-            className={`flex flex-col items-center mt-10 ${
-                mode === "row" ? "ml-10" : ""
-            } w-full max-x-[1500px]`}
-        >
+        <div className="h-full w-full overflow-y-auto flex flex-col items-center">
+            <div
+                className={`flex flex-col items-center ${
+                    mode === "row" ? "ml-10" : ""
+                } w-full max-w-[1500px] mt-10`}
+            >
             {today_sche.length === 0 && closestDaySche.length === 0 ? (
                 <Loading mode="Đang tải thời khóa biểu ngày hôm nay" />
             ) : (
@@ -202,6 +203,7 @@ export default function Day() {
                     )}
                 </>
             )}
+            </div>
         </div>
     );
 }

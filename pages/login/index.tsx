@@ -49,7 +49,7 @@ export default function Login() {
             <div
                 className={`login ml-15 ${
                     mode === "row" ? "mt-10" : "mt-6"
-                } flex flex-col items-center h-full w-[80%]`}
+                } flex flex-col items-center h-full w-[80%] overflow-y-auto`}
             >
                 <h1 className="text-3xl w-full font-bold text-center mb-5 border-b-2 pb-3 flex flex-row items-center justify-center">
                     <Hcmut_Logo height={40} width={40} />

@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { api } from "@/utils/api";
 import { Group, Task } from "@/types";
 
@@ -119,13 +126,26 @@ export default function TaskCreateDialog({
                             />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="task-assignee">Giao cho (email thành viên)</Label>
-                            <Input
-                                id="task-assignee"
+                            <Label htmlFor="task-assignee">Giao cho</Label>
+                            <Select
                                 value={assigneeEmail}
-                                onChange={(e) => setAssigneeEmail(e.target.value)}
-                                placeholder="mssv@hcmut.edu.vn"
-                            />
+                                onValueChange={(v) => setAssigneeEmail(v)}
+                            >
+                                <SelectTrigger id="task-assignee" className="w-full justify-start">
+                                    <SelectValue placeholder="Chưa phân công" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">Chưa phân công (không giao)</SelectItem>
+                                    {group.members.map((m) => (
+                                        <SelectItem key={m.email} value={m.email}>
+                                            <span>{m.fullName}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {m.email}
+                                            </span>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <Label htmlFor="task-deadline">Hạn chót</Label>

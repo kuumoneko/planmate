@@ -43,7 +43,7 @@ export default function Page() {
 
     return (
         <div
-            className={`h-full mt-6 w-full flex flex-col items-center justify-start`}
+            className={`h-full mt-6 w-full flex flex-col items-center justify-start overflow-y-auto`}
         >
             <span className="text-2xl h-[5%] w-full flex flex-row items-center justify-center">
                 Add filter

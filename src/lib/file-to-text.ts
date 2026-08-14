@@ -209,8 +209,19 @@ function pptxToText(buffer: ArrayBuffer): string {
 
 /** .pdf -> page texts via pdfjs-dist (dynamic import keeps the bundle lean). */
 async function pdfToText(buffer: ArrayBuffer): Promise<string> {
-    const pdfjs = await import("pdfjs-dist");
-    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    const isBrowser = typeof window !== "undefined";
+    // Node/Bun (tests, server): the main build references browser-only
+    // globals (DOMMatrix...), so use the legacy build there.
+    const pdfjs = isBrowser
+        ? await import("pdfjs-dist")
+        : await import("pdfjs-dist/legacy/build/pdf.mjs");
+    if (isBrowser) {
+        pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    } else {
+        pdfjs.GlobalWorkerOptions.workerSrc = (
+            import.meta as { resolve: (specifier: string) => string }
+        ).resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+    }
     const loadingTask = pdfjs.getDocument({ data: new Uint8Array(buffer) });
     const doc = await loadingTask.promise;
     try {

@@ -1,5 +1,5 @@
-import Sidebar_Bottom from "./bottom";
 import Sidebar_Top from "./top";
+import Sidebar_Groups from "./groups";
 
 export default function Sidebar({ mode }: { mode: "row" | "col" }) {
     const { height, width } = {
@@ -11,7 +11,7 @@ export default function Sidebar({ mode }: { mode: "row" | "col" }) {
             className={`flex flex-col ${height} ${width} items-start justify-evenly mb-2 min-h-0 overflow-y-auto`}
         >
             <Sidebar_Top mode={mode} />
-            <Sidebar_Bottom mode={mode} />
+            <Sidebar_Groups />
         </div>
     );
 }

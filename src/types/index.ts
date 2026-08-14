@@ -202,11 +202,17 @@ export interface QualifiedFreeTimeSlot extends FreeTimeSlot {
 /** Structured output produced by Gemini from parsed LMS markdown. */
 export interface ParsedDeadline {
     taskName: string;
-    dueDate: string; // ISO date (yyyy-mm-dd) — may be an estimate
+    dueDate: string; // ISO date (yyyy-mm-dd)
     /** Deadline time ("HH:mm") when the source states one, else null. */
     dueTime?: string | null;
     weight: number | null; // percentage if stated (e.g. 0.1), else null
     courseName: string;
+    /** Assignee named in the source text, when present. */
+    assignee?: string;
+    /** Priority "High" | "Medium" | "Low", when the model assigned one. */
+    priority?: string;
+    /** Short quote of the source text this deadline came from. */
+    context?: string;
     /** Attachments declared on the assignment (name + Moodle file URL). */
     attachments?: { name: string; url: string }[];
 }

@@ -12,7 +12,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-export const DEFAULT_MODEL = "gemini-3.7-flash";
+export const DEFAULT_MODEL = "gemini-3.6-flash";
 
 export function getGeminiKey(): string | undefined {
     return (

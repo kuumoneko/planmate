@@ -22,7 +22,7 @@ const COURSE_CODE_RE = /^\s*(?:#{1,6}\s*|\*\*\s*)?([A-Z]{2,4}\d{4})\b/;
 const DATE_ISO_RE = /(\d{4})-(\d{1,2})-(\d{1,2})/;
 const DATE_RE = /(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/;
 const DATE_YEARLESS_RE = /(\d{1,2})[/-](\d{1,2})(?![/-]\d)/;
-const HAN_RE = /(?:hạn|nộp|deadline|due|đến ngày|ngày)/i;
+const HAN_RE = /(?:hạn(?: nộp| cuối| chót)?|nộp(?: bài)?|deadline|due|đến ngày|thời hạn|hết hạn|trước ngày)/i;
 const WEIGHT_RE = /(\d{1,3})%|(?<![/\d.])(0\.\d+|1\.0+)(?![\d%])/;
 
 /** One matched line inside a course block. */
@@ -162,29 +162,107 @@ export function parseDeadlinesRegex(text: string): ParsedDeadline[] {
     return deadlines;
 }
 
-const SYSTEM_PROMPT = [
-    "Bạn là trợ lý trích xuất hạn nộp từ nội dung LMS (Moodle) của ĐHBK TP.HCM (HCMUT).",
-    "Đọc đoạn văn bản người dùng dán từ trang bài tập trên LMS, liệt kê tất cả bài tập có hạn nộp.",
-    "Nếu một bài tập không có ngày hạn cụ thể, hãy ước lượng ngày hợp lý gần nhất dựa trên ngữ cảnh và ghi chú của bài (ngày có thể là ước lượng).",
-    "Mỗi mục phải có: taskName (tên bài tập), dueDate (định dạng yyyy-mm-dd), dueTime (giờ hạn nộp định dạng HH:mm nếu nguồn ghi rõ, ví dụ '23:59'; null nếu không có), weight (tỷ lệ điểm dạng số thập phân, ví dụ 30% -> 0.3; null nếu không có), courseName (mã môn nếu biết, nếu không thì tên môn học).",
-    "taskName CHỈ là tiêu đề ngắn của bài tập (tối đa 120 ký tự). TUYỆT ĐỐI không dán toàn bộ nội dung/mô tả tài liệu vào taskName.",
-    "Chỉ trả về JSON array, không thêm giải thích hay markdown.",
-].join(" ");
+const SYSTEM_PROMPT = `Bạn là một trợ lý AI chuyên phân tích văn bản và trích xuất dữ liệu lịch trình (Task/Deadline Extractor).
+
+MỤC TIÊU:
+Nhiệm vụ của bạn là đọc đoạn văn bản đầu vào, phát hiện tất cả các tác vụ (task), cuộc họp, mốc thời gian hoặc hạn chót (deadline), sau đó trích xuất chúng thành danh sách cấu trúc JSON chuẩn.
+
+QUY TẮC TRÍCH XUẤT:
+1. Chuẩn hóa ngày tháng: Chuyển đổi tất cả thời gian tương đối (ví dụ: "cuối tuần này", "thứ 2 tuần sau", "ngày mai", "sáng thứ 6") thành ngày cụ thể theo định dạng YYYY-MM-DD dựa trên MỐC THỜI GIAN HIỆN TẠI được cung cấp.
+2. Nếu không đề cập giờ cụ thể, mặc định để \`time\`: "23:59".
+3. Xác định mức độ ưu tiên (\`priority\`):
+   - "High": Có từ ngữ khẩn cấp (gấp, quan trọng, asap, ngay) hoặc deadline trong vòng 24-48 giờ.
+   - "Medium": Deadline bình thường (trong tuần/vài ngày tới).
+   - "Low": Không gấp, kế hoạch dài hạn, ý tưởng linh hoạt.
+4. Trích xuất đúng người thực hiện (\`assignee\`) nếu có tên riêng được giao việc trong bài. Nếu là công việc chung, để "Unassigned".
+5. Mô tả công việc (\`task\`): Tóm tắt ngắn gọn, rõ ràng, bắt đầu bằng một động từ hành động.
+6. Xác định môn học (\`courseName\`): nếu văn bản đề cập mã môn (ví dụ CO3001) hoặc tên môn học, trích xuất giá trị đó; nếu không xác định được, để "Chung".
+
+ĐỊNH DẠNG ĐẦU RA (Chỉ trả về JSON thuần, không kèm lời dẫn hay markdown code block thừa nếu không yêu cầu):
+
+{
+  "reference_date": "YYYY-MM-DD",
+  "deadlines": [
+    {
+      "task": "Tên/Mô tả ngắn gọn công việc",
+      "due_date": "YYYY-MM-DD",
+      "due_time": "HH:MM",
+      "assignee": "Tên người thực hiện hoặc Unassigned",
+      "priority": "High | Medium | Low",
+      "courseName": "Tên/mã môn học hoặc Chung",
+      "context": "Trích dẫn ngắn văn bản gốc liên quan đến task này"
+    }
+  ]
+}
+
+VÍ DỤ MẪU (FEW-SHOT):
+
+[ĐẦU VÀO MẪU]
+Mốc thời gian hiện tại: 2026-08-14 (Thứ Sáu)
+Văn bản: "Hôm nay họp team xong thì Nam gửi báo cáo doanh thu trước 5h chiều nhé. Còn dự án Website mới thì tuần sau Thứ Ba team Dev phải xong bản Demo. Toàn bộ tài liệu Marketing thì Linh cố gắng hoàn thiện trước cuối tháng này."
+
+[ĐẦU RA MẪU]
+{
+  "reference_date": "2026-08-14",
+  "deadlines": [
+    {
+      "task": "Gửi báo cáo doanh thu",
+      "due_date": "2026-08-14",
+      "due_time": "17:00",
+      "assignee": "Nam",
+      "priority": "High",
+      "courseName": "Chung",
+      "context": "Nam gửi báo cáo doanh thu trước 5h chiều nhé"
+    },
+    {
+      "task": "Hoàn thành bản Demo dự án Website mới",
+      "due_date": "2026-08-18",
+      "due_time": "23:59",
+      "assignee": "Team Dev",
+      "priority": "Medium",
+      "courseName": "Chung",
+      "context": "tuần sau Thứ Ba team Dev phải xong bản Demo"
+    },
+    {
+      "task": "Hoàn thiện toàn bộ tài liệu Marketing",
+      "due_date": "2026-08-31",
+      "due_time": "23:59",
+      "assignee": "Linh",
+      "priority": "Low",
+      "courseName": "Chung",
+      "context": "Linh cố gắng hoàn thiện trước cuối tháng này"
+    }
+  ]
+}`;
 
 const DEADLINE_RESPONSE_SCHEMA = {
-    type: "ARRAY",
-    items: {
-        type: "OBJECT",
-        properties: {
-            taskName: { type: "STRING" },
-            dueDate: { type: "STRING" },
-            dueTime: { type: "STRING", nullable: true },
-            weight: { type: "NUMBER", nullable: true },
-            courseName: { type: "STRING" },
+    type: "OBJECT",
+    properties: {
+        reference_date: { type: "STRING" },
+        deadlines: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    task: { type: "STRING" },
+                    due_date: { type: "STRING" },
+                    due_time: { type: "STRING", nullable: true },
+                    assignee: { type: "STRING", nullable: true },
+                    priority: { type: "STRING", nullable: true },
+                    courseName: { type: "STRING" },
+                    context: { type: "STRING", nullable: true },
+                },
+                required: ["task", "due_date", "due_time", "assignee", "priority", "courseName", "context"],
+            },
         },
-        required: ["taskName", "dueDate", "dueTime", "weight", "courseName"],
     },
+    required: ["reference_date", "deadlines"],
 } as const;
+
+/** Today's date, used as the reference point for relative dates. */
+function referenceDate(): string {
+    return new Date().toISOString().slice(0, 10);
+}
 
 /** Normalize a parsed deadline time to "HH:mm" (12h AM/PM accepted). */
 export function normalizeDueTime(value: string | null | undefined): string | null {
@@ -213,18 +291,20 @@ export function normalizeDueTime(value: string | null | undefined): string | nul
 /** Normalize a Gemini structured JSON response into parsed deadlines. */
 function mapGeminiDeadlines(json: string): ParsedDeadline[] {
     const parsed: unknown = JSON.parse(json);
-    if (!Array.isArray(parsed)) {
-        throw new Error("Gemini did not return an array of deadlines");
+    if (!parsed || typeof parsed !== "object" || !Array.isArray((parsed as any).deadlines)) {
+        throw new Error("Gemini did not return a deadlines array");
     }
-    return parsed
+    return ((parsed as any).deadlines as any[])
         .map((item) => ({
-            taskName: String((item as any).taskName ?? "").trim(),
-            dueDate: String((item as any).dueDate ?? "").trim(),
-            dueTime: normalizeDueTime((item as any).dueTime),
-            weight: (item as any).weight == null ? null : Number((item as any).weight),
-            courseName: String((item as any).courseName ?? "").trim(),
-        }))
-        .filter((d) => d.taskName && d.dueDate && d.courseName);
+            taskName: String(item?.task ?? "").trim(),
+            dueDate: String(item?.due_date ?? "").trim(),
+            dueTime: normalizeDueTime(item?.due_time),
+            weight: null,
+            courseName: String(item?.courseName ?? "Chung").trim() || "Chung",
+            assignee: item?.assignee ? String(item.assignee).trim() : undefined,
+            priority: item?.priority ? String(item.priority).trim() : undefined,
+            context: item?.context ? String(item.context).trim() : undefined,
+        }));
 }
 
 /** Gemini structured extraction; throws when the model output is unusable. */
@@ -240,7 +320,92 @@ export async function parseDeadlinesWithGemini(
     const startedAt = Date.now();
     const response = await client.models.generateContent({
         model,
-        contents: [{ role: "user", parts: [{ text }] }],
+        contents: [
+            {
+                role: "user",
+                parts: [
+                    {
+                        text: `
+                        Bạn là một trợ lý AI chuyên phân tích văn bản và trích xuất dữ liệu lịch trình (Task/Deadline Extractor). 
+
+MỤC TIÊU:
+Nhiệm vụ của bạn là đọc đoạn văn bản đầu vào, phát hiện tất cả các tác vụ (task), cuộc họp, mốc thời gian hoặc hạn chót (deadline), sau đó trích xuất chúng thành danh sách cấu trúc JSON chuẩn.
+
+QUY TẮC TRÍCH XUẤT:
+1. Chuẩn hóa ngày tháng: Chuyển đổi tất cả thời gian tương đối (ví dụ: "cuối tuần này", "thứ 2 tuần sau", "ngày mai", "sáng thứ 6") thành ngày cụ thể theo định dạng YYYY-MM-DD dựa trên MỐC THỜI GIAN HIỆN TẠI được cung cấp.
+2. Nếu không đề cập giờ cụ thể, mặc định để time: "23:59".
+3. Xác định mức độ ưu tiên (priority):
+   - "High": Có từ ngữ khẩn cấp (gấp, quan trọng, asap, ngay) hoặc deadline trong vòng 24-48 giờ.
+   - "Medium": Deadline bình thường (trong tuần/vài ngày tới).
+   - "Low": Không gấp, kế hoạch dài hạn, ý tưởng linh hoạt.
+4. Trích xuất đúng người thực hiện (assignee) nếu có tên riêng được giao việc trong bài. Nếu là công việc chung, để "Unassigned".
+5. Mô tả công việc (task): Tóm tắt ngắn gọn, rõ ràng, bắt đầu bằng một động từ hành động.
+
+ĐỊNH DẠNG ĐẦU RA (Chỉ trả về JSON thuần, không kèm lời dẫn hay markdown code block thừa nếu không yêu cầu):
+
+{
+  "reference_date": "YYYY-MM-DD",
+  "deadlines": [
+    {
+      "task": "Tên/Mô tả ngắn gọn công việc",
+      "due_date": "YYYY-MM-DD",
+      "due_time": "HH:MM",
+      "assignee": "Tên người thực hiện hoặc Unassigned",
+      "priority": "High | Medium | Low",
+      "context": "Trích dẫn ngắn văn bản gốc liên quan đến task này"
+    }
+  ]
+}
+
+VÍ DỤ MẪU (FEW-SHOT):
+
+[ĐẦU VÀO MẪU]
+Mốc thời gian hiện tại: 2026-08-14 (Thứ Sáu)
+Văn bản: "Hôm nay họp team xong thì Nam gửi báo cáo doanh thu trước 5h chiều nhé. Còn dự án Website mới thì tuần sau Thứ Ba team Dev phải xong bản Demo. Toàn bộ tài liệu Marketing thì Linh cố gắng hoàn thiện trước cuối tháng này."
+
+[ĐẦU RA MẪU]
+{
+  "reference_date": "2026-08-14",
+  "deadlines": [
+    {
+      "task": "Gửi báo cáo doanh thu",
+      "due_date": "2026-08-14",
+      "due_time": "17:00",
+      "assignee": "Nam",
+      "priority": "High",
+      "context": "Nam gửi báo cáo doanh thu trước 5h chiều nhé"
+    },
+    {
+      "task": "Hoàn thành bản Demo dự án Website mới",
+      "due_date": "2026-08-18",
+      "due_time": "23:59",
+      "assignee": "Team Dev",
+      "priority": "Medium",
+      "context": "tuần sau Thứ Ba team Dev phải xong bản Demo"
+    },
+    {
+      "task": "Hoàn thiện toàn bộ tài liệu Marketing",
+      "due_date": "2026-08-31",
+      "due_time": "23:59",
+      "assignee": "Linh",
+      "priority": "Low",
+      "context": "Linh cố gắng hoàn thiện trước cuối tháng này"
+    }
+  ]
+}
+
+---
+BẮT ĐẦU XỬ LÝ DỮ LIỆU THỰC TẾ:
+
+Mốc thời gian hiện tại: [CHÈN NGÀY HÔM NAY VÀO ĐÂY, VD: YYYY-MM-DD]
+Văn bản cần xử lý:
+"""
+${text}
+"""`,
+                    },
+                ],
+            },
+        ],
         config: {
             temperature: 0,
             maxOutputTokens: 4096,
@@ -253,7 +418,7 @@ export async function parseDeadlinesWithGemini(
     const deadlines = mapGeminiDeadlines(response.text ?? "");
     console.log(
         `[lms-parse] Gemini done in ${elapsed}ms -> ${deadlines.length} deadlines` +
-            (deadlines.length === 0 ? " (empty, will fall back to regex)" : "")
+        (deadlines.length === 0 ? " (empty, will fall back to regex)" : "")
     );
     return deadlines;
 }
@@ -276,7 +441,7 @@ export async function parseDeadlinesFromImage(
                 parts: [
                     { inlineData: { mimeType, data: base64 } },
                     {
-                        text: "Liệt kê tất cả bài tập có hạn nộp trong ảnh này (tên bài tập, ngày hạn nộp, tỷ lệ điểm, mã/tên môn học nếu có).",
+                        text: `Mốc thời gian hiện tại: ${referenceDate()}. Liệt kê tất cả các task, cuộc họp và hạn chót trong ảnh này theo đúng định dạng quy định (task, due_date, due_time, assignee, priority, courseName, context).`,
                     },
                 ],
             },

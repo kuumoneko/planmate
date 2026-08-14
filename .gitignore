@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# test fixtures (local-only files, may contain personal data)
+/test/fixtures
+
 /backup
 /.vscode
 .vercel

@@ -50,7 +50,16 @@ export async function loadStudentDashboard(studentId: string): Promise<StudentDa
                 ? new Date(cached.lastSyncedAt).getTime()
                 : 0;
             if (cacheBuiltAt >= dataUpdatedAt) {
-                return { ...cached, source: "cache" };
+                // Normalize cached payloads: a stored cache doc may predate
+                // current fields or have arrays removed by partial updates.
+                return {
+                    ...cached,
+                    timetable: Array.isArray(cached.timetable) ? cached.timetable : [],
+                    exams: Array.isArray(cached.exams) ? cached.exams : [],
+                    lmsCourses: Array.isArray(cached.lmsCourses) ? cached.lmsCourses : [],
+                    campusConflicts: Array.isArray(cached.campusConflicts) ? cached.campusConflicts : [],
+                    source: "cache",
+                };
             }
         }
     } catch {

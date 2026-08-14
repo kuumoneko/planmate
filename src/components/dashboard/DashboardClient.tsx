@@ -12,9 +12,8 @@ import {
     Plus,
     Trash2,
     Upload,
-    Users,
 } from "lucide-react";
-import type { ParsedDeadline, StudentDashboardData, Group } from "@/types";
+import type { ParsedDeadline, StudentDashboardData } from "@/types";
 import { useUser } from "@/hooks/useUser";
 import { extractFileContent } from "@/lib/file-to-text";
 import { Badge } from "@/components/ui/badge";
@@ -67,9 +66,7 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
     // The dashboard payload is keyed by the app username (Mongo `data` docs +
     // cache are username-keyed); the LMS login may use the MSSV instead.
     const accountId = (user?.username || studentId).trim();
-    const lmsLoginId = (user?.mssv || accountId).trim() || accountId;
     const [data, setData] = useState<StudentDashboardData | null>(null);
-    const [groups, setGroups] = useState<Group[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [uploadOpen, setUploadOpen] = useState(false);
     const [pasteOpen, setPasteOpen] = useState(false);
@@ -81,23 +78,15 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
         if (!accountId) return;
         setError(null);
         try {
-            const [dashboardRes, groupsRes] = await Promise.all([
-                fetch(`/api/student/${accountId}`),
-                fetch(
-                    `/api/groups?studentId=${encodeURIComponent(lmsLoginId)}`,
-                ),
-            ]);
+            const dashboardRes = await fetch(`/api/student/${accountId}`);
             const dashboard = await dashboardRes.json();
             if (!dashboard.ok)
                 throw new Error(dashboard.data ?? "Không tải được dữ liệu");
             setData(dashboard.data as StudentDashboardData);
-
-            const groupsJson = await groupsRes.json();
-            if (groupsJson.ok) setGroups(groupsJson.data as Group[]);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Lỗi không xác định");
         }
-    }, [accountId, lmsLoginId]);
+    }, [accountId]);
 
     useEffect(() => {
         void load();
@@ -203,7 +192,7 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
         lastSyncedAt,
         source,
     } = data;
-    const deadlines = lmsCourses
+    const deadlines = (lmsCourses ?? [])
         .flatMap((c) => c.deadlines.map((d) => ({ ...d, courseCode: c.code })))
         .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     const today = new Date().toISOString().slice(0, 10);
@@ -407,14 +396,14 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                         </Button>
                     </div>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-2 max-h-20">
+                <CardContent className="flex flex-col gap-2">
                     {deadlines.length === 0 && (
                         <p className="text-muted-foreground">
                             Chưa có dữ liệu LMS. Tải lên file trang bài tập từ
                             LMS hoặc dán nội dung bài tập.
                         </p>
                     )}
-                    <div className="no-scrollbar flex max-h-[min(15rem,45vh)] flex-col gap-2 overflow-y-auto overscroll-contain">
+                    <div className="no-scrollbar flex max-h-[min(26rem,75vh)] flex-col gap-2 overflow-y-auto overscroll-contain">
                         {deadlines.map((d, i) => {
                             const overdue = d.dueDate < today;
                             const soon = !overdue && d.dueDate <= today;
@@ -492,42 +481,6 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                             );
                         })}
                     </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Users className="size-4" /> Nhóm học tập
-                    </CardTitle>
-                    <CardDescription>
-                        {groups.length} nhóm của bạn
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2">
-                    {groups.length === 0 && (
-                        <p className="text-muted-foreground">
-                            Chưa tham gia nhóm nào. Tạo nhóm tại trang Nhóm.
-                        </p>
-                    )}
-                    {groups.map((g) => (
-                        <a
-                            key={g.id}
-                            href={`/groups/${g.id}`}
-                            className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 transition-colors hover:bg-muted"
-                        >
-                            <div>
-                                <p className="font-medium">{g.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {g.courseName ||
-                                        g.courseCode ||
-                                        "Chưa có môn"}{" "}
-                                    · {g.members.length} thành viên
-                                </p>
-                            </div>
-                            <span className="text-xs text-primary">Mở →</span>
-                        </a>
-                    ))}
                 </CardContent>
             </Card>
 

@@ -4,17 +4,15 @@ import {
     faCalendarDays,
     faFilter,
     faHouse,
-    faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { useOrientationMode } from "@/hooks/display";
 
-function Side_bar_Button({ text, url }: { text: string; url: string }) {
+export function Side_bar_Button({ text, url }: { text: string; url: string }) {
     const mode = useOrientationMode();
     const Font_Awesome: any = {
         "Tổng quan": faHouse,
         "Lịch thi": faCalendarCheck,
         "Thời khoá biểu": faCalendarDays,
-        "Nhóm học tập": faUserGroup,
         "Bộ lọc": faFilter,
     };
     return (
@@ -53,7 +51,6 @@ export default function Sidebar_Top({ mode }: { mode: "row" | "col" }) {
                     <Side_bar_Button text="Tổng quan" url="/dashboard" />
                     <Side_bar_Button text="Lịch thi" url="/exam" />
                     <Side_bar_Button text="Thời khoá biểu" url="/schedule" />
-                    <Side_bar_Button text="Nhóm học tập" url="/groups" />
                     <Side_bar_Button text="Bộ lọc" url="/filter" />
                 </ul>
             </div>

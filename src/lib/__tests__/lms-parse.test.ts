@@ -100,6 +100,21 @@ describe("parseDeadlinesRegex", () => {
         const deadlines = parseDeadlinesRegex("BT1 - hạn nộp: 15/04/2026");
         expect(deadlines[0].dueTime).toBeNull();
     });
+
+    test("ignores dated lines without a deadline signal", () => {
+        const text = [
+            "CO3001 - Phân tích thiết kế hướng đối tượng",
+            "- Buổi 1: bắt đầu ngày 20/08/2026",
+            "- Thi cuối kỳ: 20/12/2026",
+            "- Bài tập 1 - hạn nộp: 15/04/2026",
+        ].join("\n");
+        const deadlines = parseDeadlinesRegex(text);
+        expect(deadlines).toHaveLength(1);
+        expect(deadlines[0]).toMatchObject({
+            taskName: "Bài tập 1",
+            dueDate: "2026-04-15",
+        });
+    });
 });
 
 describe("extractDueTime", () => {
@@ -145,6 +160,16 @@ describe("extractDueDate", () => {
 
     test("returns null without a date", () => {
         expect(extractDueDate("Bài tập nhóm")).toBeNull();
+    });
+
+    test("does not treat a bare 'ngày' as a deadline signal", () => {
+        expect(extractDueDate("Bắt đầu ngày 15/04")).toBeNull();
+    });
+
+    test("treats 'trước ngày' as a deadline signal", () => {
+        expect(extractDueDate("nộp trước ngày 15/04")).toBe(
+            String(new Date().getFullYear()) + "-04-15"
+        );
     });
 });
 

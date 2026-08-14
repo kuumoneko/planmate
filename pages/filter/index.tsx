@@ -124,7 +124,7 @@ export default function Filter() {
                                     return (
                                         <div
                                             key={`${item.subject}`}
-                                            className="flex flex-col items-center justify-center rounded-4xl hover:bg-slate-400 hover:text-slate-600 hover:cursor-pointer"
+                                            className="flex flex-col items-center justify-center rounded-4xl hover:bg-slate-400 hover:text-[#475569] dark:hover:text-slate-600 hover:cursor-pointer"
                                             onClick={() => {
                                                 window.location.href = `/filter/add/filter?data=${encodeURIComponent(
                                                     JSON.stringify(item)

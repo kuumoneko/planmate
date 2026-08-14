@@ -9,7 +9,7 @@ export default function Hcmut_Logo({
 }) {
     return (
         <span
-            className="inline-flex items-center justify-center rounded-full bg-slate-600 text-slate-100 mr-1.25"
+            className="inline-flex items-center justify-center rounded-full bg-slate-600 text-slate-800 dark:text-slate-100 mr-1.25"
             style={{ height, width }}
             title="HCMUT"
         >

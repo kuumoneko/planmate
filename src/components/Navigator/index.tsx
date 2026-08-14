@@ -1,11 +1,15 @@
 "use client";
 import { useOrientationMode } from "@/hooks/display";
+import { useTheme } from "@/hooks/useTheme";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
 import Hcmut from "./settings/hcmut";
 import { convertDateFormat, getnow } from "@/utils/day";
 
 export default function Nav() {
     const { week } = getnow();
     const mode = useOrientationMode();
+    const { theme, toggle } = useTheme();
 
     const today =
         mode === "row"
@@ -27,7 +31,7 @@ export default function Nav() {
                     window.location.href = "/";
                 }}
             >
-                <span className="cursor-auto select-none text-white hover:cursor-pointer">
+                <span className="cursor-auto select-none text-slate-800 dark:text-white hover:cursor-pointer">
                     BK Calendar
                 </span>
             </div>
@@ -42,7 +46,17 @@ export default function Nav() {
                 </div>
             )}
 
-            <div className="settings flex flex-row justify-between items-center">
+            <div className="settings flex flex-row justify-between items-center gap-2">
+                <div
+                    className="hover:cursor-pointer hover:bg-slate-400 hover:text-slate-800 px-2.5 py-1.25 text-slate-100 rounded-3xl bg-slate-800"
+                    onClick={toggle}
+                    title={theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                >
+                    <FontAwesomeIcon
+                        icon={theme === "dark" ? faSun : faMoon}
+                        className="pointer-events-none"
+                    />
+                </div>
                 <div className="hover:cursor-pointer hover:bg-slate-400 hover:text-slate-800 px-2.5 py-1.25 text-slate-100 rounded-3xl bg-slate-800" onClick={() => {window.location.href = "/export";}}>
                     Export
                 </div>

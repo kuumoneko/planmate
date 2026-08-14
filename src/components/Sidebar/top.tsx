@@ -38,7 +38,7 @@ export default function Sidebar_Top({ mode }: { mode: "row" | "col" }) {
         <div
             className={`w-full ${
                 mode === "row" ? "max-w-62.5 p-7" : "h-[40%] p-2"
-            } bg-slate-700 text-white rounded-3xl`}
+            } bg-slate-700 text-slate-800 dark:text-white rounded-3xl`}
         >
             <div className="navigation">
                 <ul

@@ -7,8 +7,8 @@
 /* Layout rules below are scoped OUT of the App Router tree (body.app-root):
    the App Router pages manage their own layout via flexible containers. */
 body:not(.app-root) {
-    background-color: #000000;
-    color: #c9c9c9;
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
@@ -18,6 +18,21 @@ body:not(.app-root) {
     width: 100vw;
     margin: 0;
     box-sizing: border-box;
+}
+
+/* Light mode: remap the legacy slate/neutral/gray utilities (Tailwind v4
+   resolves them through --color-* variables) so hardcoded dark-only classes
+   like bg-slate-700 panels or bg-slate-500 inputs adapt to light surfaces.
+   Dark mode keeps the default Tailwind values untouched. */
+:root:not(.dark) {
+    --color-slate-900: #f1f5f9;
+    --color-slate-700: #e2e8f0;
+    --color-slate-600: #cbd5e1;
+    --color-slate-500: #94a3b8;
+    --color-slate-300: #334155;
+    --color-slate-50: #0f172a;
+    --color-neutral-400: #64748b;
+    --color-gray-400: #64748b;
 }
 
 @theme inline {

@@ -22,10 +22,10 @@ export default function Template({ children }: { children: React.ReactNode }) {
     return (
         <div
             className={
-                "dark flex flex-col bg-slate-900 h-screen w-screen items-center justify-center m-0 p-0 select-none cursor-default"
+                "flex flex-col bg-slate-900 h-screen w-screen items-center justify-center m-0 p-0 select-none cursor-default"
             }
         >
-            <div className="dark flex flex-col bg-slate-900 h-full w-full items-center justify-start m-0 p-0 select-none cursor-default">
+            <div className="flex flex-col bg-slate-900 h-full w-full items-center justify-start m-0 p-0 select-none cursor-default">
                 <Nav />
                 <div
                     className={`flex ${

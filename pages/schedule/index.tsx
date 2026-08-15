@@ -8,11 +8,19 @@ import { FullScheduleByWeek, SubjectInfo } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ScheduleGrid, { GridDay } from "@/components/schedule/ScheduleGrid";
+import ImportImageDialog from "@/components/import/ImportImageDialog";
+import { Upload } from "lucide-react";
 
 export default function Schedule() {
     const [schedule_all, setschedule] = useState<FullScheduleByWeek | null>(null);
     const this_week = getnow().week;
     const [week, setweek] = useState(0);
+    const [importOpen, setImportOpen] = useState(false);
+    const [username, setUsername] = useState("");
+
+    useEffect(() => {
+        setUsername(JSON.parse(localStorage.getItem("user") ?? "{}")?.username ?? "");
+    }, []);
 
     useEffect(() => {
         async function run() {
@@ -195,6 +203,19 @@ export default function Schedule() {
                 </div>
                 <Badge variant="secondary">{this_week === week ? "Tuần hiện tại" : ""}</Badge>
             </div>
+            <div className="flex items-center justify-between w-full max-w-5xl">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setImportOpen(true)}
+                >
+                    <Upload className="size-4" />
+                    Tải lên lịch học
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                    {username}
+                </span>
+            </div>
 
             {schedule_all === null ? (
                 <Loading mode="Đang tải thời khóa biểu" />
@@ -202,10 +223,16 @@ export default function Schedule() {
                 <div className="flex flex-col items-center gap-2 py-12 text-center">
                     <p className="text-lg font-medium">Chưa có dữ liệu thời khoá biểu</p>
                     <p className="text-sm text-muted-foreground">
-                        Đăng nhập bằng tài khoản HCMUT để tự động tải lịch học từ mybk.
+                        Chụp màn hình bảng thời khoá biểu từ mybk và tải lên
+                        để tự động thêm lịch học.
                     </p>
-                    <Button variant="outline" size="sm" onClick={() => (window.location.href = "/login")}>
-                        Đăng nhập
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setImportOpen(true)}
+                    >
+                        <Upload className="size-4" />
+                        Tải lên lịch học
                     </Button>
                 </div>
             ) : (
@@ -240,6 +267,13 @@ export default function Schedule() {
                     })()}
                 </div>
             )}
+            <ImportImageDialog
+                open={importOpen}
+                onOpenChange={setImportOpen}
+                kind="schedule"
+                username={username}
+                onImported={() => window.location.reload()}
+            />
         </div>
     );
 }

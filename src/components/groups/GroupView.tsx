@@ -214,7 +214,7 @@ export default function GroupView({
                 <Card className="lg:h-full lg:flex lg:flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">Thành viên ({group.members.length})</CardTitle>
-                        <CardDescription>Mời bạn học bằng email HCMUT</CardDescription>
+                        <CardDescription>Mời bạn học bằng email HCMUT hoặc tên đăng nhập</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
                         <div className="flex flex-col gap-2 max-h-64 overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0">
@@ -231,6 +231,11 @@ export default function GroupView({
                                             </p>
                                             <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
                                                 <Mail className="h-3 w-3" /> {m.email}
+                                                {!m.email.includes("@") && (
+                                                    <Badge variant="outline" className="text-[10px]">
+                                                        tài khoản cục bộ
+                                                    </Badge>
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -263,7 +268,7 @@ export default function GroupView({
                                     <Input
                                         value={inviteEmail}
                                         onChange={(e) => setInviteEmail(e.target.value)}
-                                        placeholder="mssv@hcmut.edu.vn"
+                                        placeholder="mssv@hcmut.edu.vn hoặc username"
                                         onKeyDown={(e) => e.key === "Enter" && invite()}
                                     />
                                     <Button variant="outline" size="icon" onClick={invite}>

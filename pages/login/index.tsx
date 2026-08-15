@@ -1,11 +1,17 @@
 import Hcmut_Logo from "@/components/Logo";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertTriangle } from "lucide-react";
 import { useOrientationMode } from "@/hooks/display";
 import logining from "@/utils/data/login";
 import { convert } from "@/lib/pass";
+import {
+    clearLocalLoginChoice,
+    getLocalLoginChoice,
+    isMybkUsername,
+    setLocalLoginChoice,
+} from "@/lib/username-rule";
 
 export default function Login() {
     useEffect(() => {
@@ -23,20 +29,33 @@ export default function Login() {
     const [hidden, sethidden] = useState(true);
     const [login, setlogin] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
+    const [askLocal, setAskLocal] = useState<string | null>(null);
+    const skipAskRef = useRef("");
 
     useEffect(() => {
         if (!login) {
             return;
         }
         setError(null);
+        setNotice(null);
         if (username.length === 0 || password.length === 0) {
             alert("Vui lòng nhập tài khoản và mật khẩu");
             return setlogin(false);
         }
-        const normalized = username.trim().split("@")[0];
+        const normalized = username.trim();
+        if (!isMybkUsername(normalized) && skipAskRef.current !== normalized) {
+            if (!getLocalLoginChoice(normalized)) {
+                setAskLocal(normalized);
+                return setlogin(false);
+            }
+        }
+        skipAskRef.current = "";
         async function run() {
             try {
-                await logining(normalized, convert(password));
+                await logining(normalized, convert(password), {
+                    localOnly: !isMybkUsername(normalized),
+                });
                 setlogin(false);
             } catch (e: any) {
                 setError(e?.message ?? "Đăng nhập thất bại");
@@ -46,7 +65,27 @@ export default function Login() {
         run();
     }, [login]);
 
+    const confirmLocal = (remember: boolean) => {
+        const name = askLocal;
+        setAskLocal(null);
+        if (!name) return;
+        if (remember) {
+            setLocalLoginChoice(name);
+        }
+        else {
+            skipAskRef.current = name;
+        }
+        setlogin(true);
+    };
+
+    const forgetChoice = () => {
+        clearLocalLoginChoice(username.trim());
+        setNotice(`Đã quên lựa chọn cho «${username.trim()}».`);
+    };
+
     const mode = useOrientationMode();
+    const savedLocalChoice =
+        username.trim().length > 0 && getLocalLoginChoice(username.trim());
 
     return (
         <>
@@ -57,9 +96,50 @@ export default function Login() {
             >
                 <h1 className="text-3xl w-full font-bold text-center mb-5 border-b-2 pb-3 flex flex-row items-center justify-center">
                     <Hcmut_Logo height={40} width={40} />
-                    Đăng nhập bằng tài khoản HCMUT
+                    Đăng nhập
                 </h1>
                 <div className="login_form flex flex-col">
+                    {askLocal ? (
+                        <div className="flex w-[95%] flex-col gap-3 rounded-xl bg-slate-800 px-4 py-4 text-sm">
+                            <div className="flex items-start gap-2.5">
+                                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-400" />
+                                <div className="flex flex-col gap-1">
+                                    <p>
+                                        Tên đăng nhập{" "}
+                                        <span className="font-medium text-slate-100">
+                                            «{askLocal}»
+                                        </span>{" "}
+                                        không giống tài khoản mybk (VD:{" "}
+                                        <span className="font-mono">viet.anh9q1</span>).
+                                    </p>
+                                    <p>
+                                        Bạn có muốn đăng nhập bằng tài khoản cục bộ
+                                        không?
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <div
+                                    className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-center hover:cursor-pointer"
+                                    onClick={() => confirmLocal(true)}
+                                >
+                                    Có, nhớ lựa chọn
+                                </div>
+                                <div
+                                    className="bg-slate-600 px-3 py-1.5 rounded-2xl text-center hover:cursor-pointer"
+                                    onClick={() => confirmLocal(false)}
+                                >
+                                    Chỉ lần này
+                                </div>
+                                <div
+                                    className="bg-slate-700 px-3 py-1.5 rounded-2xl text-center hover:cursor-pointer"
+                                    onClick={() => setAskLocal(null)}
+                                >
+                                    Hủy
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
                     <form className="flex flex-col cursor-default select-none">
                         <div className="flex flex-col w-full">
                             <label htmlFor="username">Tên tài khoản:</label>
@@ -101,6 +181,11 @@ export default function Login() {
                                 <span>{error}</span>
                             </div>
                         )}
+                        {notice && (
+                            <div className="mt-4 flex w-[95%] items-start gap-2.5 rounded-xl bg-slate-500/15 px-4 py-3 text-sm text-slate-300 ring-1 ring-slate-500/30">
+                                <span>{notice}</span>
+                            </div>
+                        )}
                         <div className="flex flex-row-reverse items-start mt-5 w-[95%]">
                             <div
                                 className="ml-10 bg-indigo-500 px-3 py-1.5 rounded-2xl hover:cursor-pointer"
@@ -115,7 +200,29 @@ export default function Login() {
                                 )}
                             </div>
                         </div>
+                        <div className="mt-2 flex w-[95%] items-center justify-center">
+                            <span className="text-sm text-slate-400">
+                                Chưa có tài khoản?{" "}
+                                <a
+                                    href="/signup"
+                                    className="text-indigo-400 underline underline-offset-2"
+                                >
+                                    Đăng ký
+                                </a>
+                            </span>
+                        </div>
+                        {savedLocalChoice && (
+                            <div className="mt-1 flex w-[95%] items-center justify-center">
+                                <span
+                                    className="text-xs text-slate-500 underline underline-offset-2 hover:cursor-pointer"
+                                    onClick={forgetChoice}
+                                >
+                                    Quên lựa chọn?
+                                </span>
+                            </div>
+                        )}
                     </form>
+                    )}
                 </div>
             </div>
         </>

@@ -69,7 +69,7 @@ export default function GroupCreateDialog({
                 <DialogHeader>
                     <DialogTitle>Tạo nhóm học tập</DialogTitle>
                     <DialogDescription>
-                        Tạo nhóm cho một môn học (BTL) và mời thành viên bằng email HCMUT.
+                        Tạo nhóm cho một môn học (BTL) và mời thành viên bằng email HCMUT hoặc tên đăng nhập.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-3">

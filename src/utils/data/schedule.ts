@@ -5,6 +5,7 @@ import { formatDate } from "@/types/day";
 import mongodb from "./databsae";
 import deepArrayEqual from "../array";
 import Logout from "../logout";
+import { pruneExpiredSchedule } from "./prune";
 
 /**
  * Create fully schedule
@@ -19,13 +20,13 @@ export default async function full_schedule(): Promise<SubjectInfo[]> {
             return [];
         }
 
-        let { username, MSSV, semester } = JSON.parse(localStorage.getItem("user") as string);
+        let { username, MSSV, semester, semesterStart } = JSON.parse(localStorage.getItem("user") as string);
 
         let mybk_schedule: SubjectInfo[] = [], database_schedule: SubjectInfo[] = [], filters: any[] = [];
 
         const promises = [];
         if (token.length !== 0 && token !== "undefined" && isOffline === false) {
-            promises.push((get_web_schedule(token, MSSV, semester)).then((res: any) => {
+            promises.push((get_web_schedule(token, MSSV, semester, semesterStart)).then((res: any) => {
                 mybk_schedule = res;
             })
             )
@@ -53,7 +54,16 @@ export default async function full_schedule(): Promise<SubjectInfo[]> {
         })
         )
         await Promise.all(promises);
-        
+
+        // Drop expired entries (all learning weeks already passed) from the
+        // cached copy — BEFORE any merge/persist, so stale rows never get
+        // written back into the database.
+        const pruned = pruneExpiredSchedule(database_schedule);
+        if (pruned.length !== database_schedule.length) {
+            database_schedule = pruned;
+            mongodb("schedule", "post", { username: username, data: pruned });
+        }
+
         if (mybk_schedule === null && database_schedule === null) {
             window.location.href = "/down";
         }

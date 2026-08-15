@@ -268,8 +268,8 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                             Chưa đăng nhập
                         </h2>
                         <p className="text-sm text-slate-400">
-                            Đăng nhập bằng tài khoản HCMUT để xem lịch học, lịch
-                            thi và deadline của bạn.
+                            Đăng nhập hoặc đăng ký tài khoản để xem lịch học,
+                            lịch thi và deadline của bạn.
                         </p>
                     </div>
                     <Button
@@ -278,6 +278,14 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                         onClick={() => (window.location.href = "/login")}
                     >
                         Đăng nhập ngay
+                    </Button>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => (window.location.href = "/signup")}
+                    >
+                        Đăng ký tài khoản
                     </Button>
                 </div>
             </div>

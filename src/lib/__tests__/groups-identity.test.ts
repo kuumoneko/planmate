@@ -97,3 +97,45 @@ describe("identity precedence", () => {
         expect(isLeaderOf(ambiguous, "2212345")).toBe(false);
     });
 });
+
+describe("local-account members (no MSSV, email = username)", () => {
+    const localGroup: Group = {
+        ...group,
+        createdBy: "kuumoneko",
+        members: [
+            {
+                studentId: "",
+                email: "kuumoneko",
+                fullName: "Mai Ngọc Nhật",
+                isLeader: true,
+                joinedAt: "2026-08-15T00:00:00.000Z",
+                scheduleShared: true,
+                username: "kuumoneko",
+            },
+            {
+                studentId: "",
+                email: "import.test",
+                fullName: "Import Test",
+                isLeader: false,
+                joinedAt: "2026-08-15T00:00:00.000Z",
+                scheduleShared: true,
+                username: "import.test",
+            },
+        ],
+    };
+
+    test("leader matched by username despite empty studentId", () => {
+        expect(isLeaderOf(localGroup, "kuumoneko")).toBe(true);
+        expect(isLeaderOf(localGroup, "import.test")).toBe(false);
+    });
+
+    test("member matched by username despite empty studentId", () => {
+        expect(isMemberOf(localGroup, "kuumoneko")).toBe(true);
+        expect(isMemberOf(localGroup, "import.test")).toBe(true);
+    });
+
+    test("empty identity never matches", () => {
+        expect(isLeaderOf(localGroup, "")).toBe(false);
+        expect(isMemberOf(localGroup, "")).toBe(false);
+    });
+});

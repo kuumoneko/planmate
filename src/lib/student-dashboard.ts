@@ -11,6 +11,30 @@ import { mergeLmsDeadlines } from "../../lib/lms/mapping";
 
 export const DASHBOARD_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
+/**
+ * yyyy-mm-dd of the Monday of the current week (same cutoff the schedule
+ * page uses): courses whose latest date is before this are past-semester
+ * data and must not surface on the dashboard.
+ */
+export function currentWeekMonday(): string {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(now);
+    monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
+    const y = monday.getFullYear();
+    const m = String(monday.getMonth() + 1).padStart(2, "0");
+    const d = String(monday.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+/** Keep courses that still have at least one date in the current/future weeks. */
+function isUpcomingCourse(c: CourseSchedule): boolean {
+    const cutoff = currentWeekMonday();
+    return c.dates.some((date) => date >= cutoff);
+}
+
 export function dashboardCacheKey(studentId: string): string {
     return `dashboard:${studentId}`;
 }
@@ -54,7 +78,9 @@ export async function loadStudentDashboard(studentId: string): Promise<StudentDa
                 // current fields or have arrays removed by partial updates.
                 return {
                     ...cached,
-                    timetable: Array.isArray(cached.timetable) ? cached.timetable : [],
+                    timetable: Array.isArray(cached.timetable)
+                        ? cached.timetable.filter(isUpcomingCourse)
+                        : [],
                     exams: Array.isArray(cached.exams) ? cached.exams : [],
                     lmsCourses: Array.isArray(cached.lmsCourses) ? cached.lmsCourses : [],
                     campusConflicts: Array.isArray(cached.campusConflicts) ? cached.campusConflicts : [],
@@ -170,7 +196,8 @@ async function buildLiveDashboard(studentId: string): Promise<StudentDashboardDa
     const user = doc.user ?? {};
     const timetable: CourseSchedule[] = (doc.schedule as any[])
         .map((sub: any) => subjectToCourse(sub))
-        .filter((c): c is CourseSchedule => c !== null);
+        .filter((c): c is CourseSchedule => c !== null)
+        .filter(isUpcomingCourse);
 
     const exams: ExamSchedule[] = (doc.exam as any[] ?? [])
         .map((ex: any) => examToExamSchedule(ex))

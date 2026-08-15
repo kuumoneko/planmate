@@ -5,7 +5,7 @@ import get_web_semester from "./hcmut/api/semester";
 import deepEqual from "../object";
 import { revert } from "@/lib/pass";
 
-export default async function logining(username: string, password: string) {
+export default async function logining(username: string, password: string, opts: { localOnly?: boolean } = {}) {
 
     username = username.trim().split("@")[0];
 
@@ -14,9 +14,11 @@ export default async function logining(username: string, password: string) {
         login_db(username, revert(password)).then((res: any) => {
             result = res;
         }),
-        fetch_login(username, password).then((res: string | undefined) => {
-            token = res;
-        })
+        (opts.localOnly
+            ? Promise.resolve(undefined)
+            : fetch_login(username, password)).then((res: string | undefined) => {
+                token = res;
+            })
     ])
 
     if (token === "ok" || token === undefined) {
@@ -42,7 +44,7 @@ export default async function logining(username: string, password: string) {
             database_user = data;
         })
     )
-    if (token !== "ok") {
+    if (token && token !== "ok") {
         data_promises.push(
             get_student_data(token as string).then((res: any) => {
                 mybk_user = res;
@@ -59,7 +61,7 @@ export default async function logining(username: string, password: string) {
 
     let user;
 
-    if (token !== "ok") {
+    if (token && token !== "ok") {
         if (!deepEqual(mybk_user, database_user)) {
             await mongodb("user", "post", {
                 username: username, data: {
@@ -78,10 +80,10 @@ export default async function logining(username: string, password: string) {
         user = {
             username: username,
             ...database_user,
-            semester: database_semester
+            semester: database_user?.semester ?? ""
         };
     }
-    localStorage.setItem("token", token as string);
+    localStorage.setItem("token", token ?? "");
     localStorage.setItem("user", JSON.stringify(user));
     const expires = new Date().getTime() + 2 * 60 * 60 * 1000;
     localStorage.setItem("expires", expires.toString());

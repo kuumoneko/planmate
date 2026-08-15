@@ -150,7 +150,8 @@ export async function createGroup(input: {
     const { groups } = await collections();
     const leader: GroupMember = {
         studentId: input.mssv,
-        email: input.email,
+        // Local accounts have no email — their member key is the username.
+        email: input.email || input.username,
         fullName: input.fullName,
         isLeader: true,
         joinedAt: new Date().toISOString(),
@@ -189,9 +190,10 @@ export async function deleteGroup(groupId: string): Promise<void> {
 }
 
 /**
- * Resolve an HCMUT email to a known app user (for invites).
- * Matches against the cached profile (`user.email` = mybk orgEmail)
- * and falls back to the MSSV prefix convention.
+ * Resolve an HCMUT email or app username to a known app user (for invites).
+ * HCMUT emails match against the cached profile (`user.email` = mybk orgEmail)
+ * and fall back to the MSSV prefix convention; plain usernames resolve local
+ * accounts (whose member key is their username).
  */
 export async function resolveUserByEmail(
     email: string
@@ -206,7 +208,8 @@ export async function resolveUserByEmail(
     const match = docs.find(
         (doc: any) =>
             String(doc?.user?.email ?? "").toLowerCase() === normalized ||
-            String(doc?.user?.MSSV ?? "").toLowerCase() === mssv
+            String(doc?.user?.MSSV ?? "").toLowerCase() === mssv ||
+            String(doc?.username ?? "").toLowerCase() === normalized
     );
     if (!match) return null;
 
@@ -234,7 +237,7 @@ export async function resolveUserByUsername(username: string): Promise<{
         username: doc.username,
         mssv: doc.user?.MSSV ?? doc.user?.id ?? "",
         fullName: doc.user?.name ?? doc.username,
-        email: doc.user?.email ?? `${doc.username}@hcmut.edu.vn`,
+        email: doc.user?.email ?? doc.username,
     };
 }
 
@@ -265,7 +268,7 @@ export async function searchUsers(
             const mssv = String(doc?.user?.MSSV ?? "").toLowerCase();
             const username = String(doc?.username ?? "").toLowerCase();
             if (email && excluded.has(email)) return false;
-            if (term.length === 0) return Boolean(email);
+            if (term.length === 0) return true;
             return (
                 name.includes(term) ||
                 username.includes(term) ||
@@ -277,7 +280,7 @@ export async function searchUsers(
             username: doc.username,
             fullName: doc.user?.name ?? doc.username,
             mssv: doc.user?.MSSV ?? doc.user?.id ?? "",
-            email: doc.user?.email ?? `${doc.username}@hcmut.edu.vn`,
+            email: doc.user?.email ?? doc.username,
         }));
 }
 

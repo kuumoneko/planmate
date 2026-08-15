@@ -50,10 +50,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(400).json({ ok: false, data: "name is required" });
             }
             const profile = await getUserProfile(username);
-            if (!profile || !profile.email) {
+            if (!profile) {
                 return res.status(400).json({
                     ok: false,
-                    data: "Không tìm thấy hồ sơ. Đăng nhập lại qua mybk để lưu email.",
+                    data: "Không tìm thấy hồ sơ người dùng. Hãy đăng nhập lại lần đầu để kích hoạt tài khoản.",
                 });
             }
             const group = await createGroup({

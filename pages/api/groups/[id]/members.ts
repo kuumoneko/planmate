@@ -13,7 +13,8 @@ import {
 /**
  * /api/groups/[id]/members
  *  GET    ?q=<term>         -> search app users (leader only)
- *  POST   {studentId?, username?, email}    -> invite member by HCMUT email (leader only)
+ *  POST   {studentId?, username?, email}    -> invite member by HCMUT email
+ *                                              or app username (leader only)
  *  POST   {studentId?, username?, username} -> add member picked from the database (leader only)
  *  DELETE {studentId?, username?, email}    -> remove member (leader or self)
  * Identity is MSSV first (`studentId`), `username` accepted as fallback.
@@ -50,20 +51,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             if (email.length > 0) {
-                if (!HCMUT_EMAIL_RE.test(email)) {
-                    return res.status(400).json({
-                        ok: false,
-                        data: "Email phải là email HCMUT (@hcmut.edu.vn)",
+                if (HCMUT_EMAIL_RE.test(email)) {
+                    // mybk email invite (member key = the email)
+                    if (group.members.some((m) => m.email === email)) {
+                        return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });
+                    }
+                    const resolved = await resolveUserByEmail(email);
+                    const updated = await addMember(group, email, resolved);
+                    return res.status(200).json({
+                        ok: true,
+                        data: { group: updated, resolved: Boolean(resolved) },
                     });
                 }
-                if (group.members.some((m) => m.email === email)) {
+                // Local-account invite (member key = the username)
+                const resolved = await resolveUserByUsername(email);
+                if (!resolved) {
+                    return res.status(400).json({
+                        ok: false,
+                        data: "Email phải là email HCMUT (@hcmut.edu.vn) hoặc tên đăng nhập người dùng.",
+                    });
+                }
+                if (group.members.some((m) => m.email === resolved.email)) {
                     return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });
                 }
-                const resolved = await resolveUserByEmail(email);
-                const updated = await addMember(group, email, resolved);
+                const updated = await addMember(group, resolved.email, resolved);
                 return res.status(200).json({
                     ok: true,
-                    data: { group: updated, resolved: Boolean(resolved) },
+                    data: { group: updated, resolved: true },
                 });
             }
 

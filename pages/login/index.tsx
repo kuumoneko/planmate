@@ -2,7 +2,7 @@ import Hcmut_Logo from "@/components/Logo";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
-import { handle_error } from "@/utils/error";
+import { AlertTriangle } from "lucide-react";
 import { useOrientationMode } from "@/hooks/display";
 import logining from "@/utils/data/login";
 import { convert } from "@/lib/pass";
@@ -22,21 +22,31 @@ export default function Login() {
     const [password, serpassword] = useState("");
     const [hidden, sethidden] = useState(true);
     const [login, setlogin] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!login) {
             return;
         }
+        setError(null);
         if (username.length === 0 || password.length === 0) {
             alert("Vui lòng nhập tài khoản và mật khẩu");
             return setlogin(false);
         }
+        const normalized = username.trim().split("@")[0];
+        if (!/^[a-z]+\.[a-z]+[a-z0-9]+$/i.test(normalized)) {
+            alert(
+                "Tên đăng nhập không hợp lệ. Phải có dạng <tên>.<họ><kí tự ngẫu nhiên> — VD: viet.anh9q1. Email dạng user@hcmut.edu.vn cũng được chấp nhận."
+            );
+            return setlogin(false);
+        }
         async function run() {
             try {
-                await logining(username, convert(password));
+                await logining(normalized, convert(password));
                 setlogin(false);
             } catch (e: any) {
-                handle_error(e);
+                setError(e?.message ?? "Đăng nhập thất bại");
+                setlogin(false);
             }
         }
         run();
@@ -91,6 +101,12 @@ export default function Login() {
                                 </div>
                             </div>
                         </div>
+                        {error && (
+                            <div className="mt-4 flex w-[95%] items-start gap-2.5 rounded-xl bg-red-500/15 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/30">
+                                <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
                         <div className="flex flex-row-reverse items-start mt-5 w-[95%]">
                             <div
                                 className="ml-10 bg-indigo-500 px-3 py-1.5 rounded-2xl hover:cursor-pointer"

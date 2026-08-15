@@ -36,6 +36,12 @@ export function useUser(): { user: Student | null; loading: boolean } {
         } finally {
             setLoading(false);
         }
+        const onLogout = () => {
+            setUser(null);
+            setLoading(false);
+        };
+        window.addEventListener("logout", onLogout);
+        return () => window.removeEventListener("logout", onLogout);
     }, []);
 
     return { user, loading };

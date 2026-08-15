@@ -19,9 +19,8 @@ export default function Hcmut() {
             }
 
             Logout();
-            setuser({ name: null });
-            localStorage.setItem("user", JSON.stringify({ name: null }));
             setlogout(false);
+            window.location.href = "/dashboard";
         }
         run();
     }, [logout]);

@@ -19,12 +19,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (password.length === 0) {
             return "";
         }
+        const normalized = username.trim().split("@")[0];
+        if (!/^[a-z]+\.[a-z]+[a-z0-9]+$/i.test(normalized)) {
+            return res.status(200).json({ data: "Tên đăng nhập không hợp lệ. Phải có dạng <tên>.<họ><kí tự ngẫu nhiên> — VD: viet.anh9q1", ok: false });
+        }
         const { JSESSIONID, ltValue, executionValue } =
             await create_login();
         const result = await login_user(
             ltValue || "",
             executionValue || "",
-            username,
+            normalized,
             revert(password),
             JSESSIONID || "",
         );

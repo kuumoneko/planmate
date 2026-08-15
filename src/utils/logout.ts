@@ -6,5 +6,7 @@ export default function Logout(): void {
     localStorage.removeItem("session");
     localStorage.removeItem("token");
     localStorage.removeItem("expires");
+    localStorage.removeItem("offline");
+    window.dispatchEvent(new Event("logout"));
 
 }

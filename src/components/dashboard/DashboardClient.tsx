@@ -7,6 +7,7 @@ import {
     ClipboardPaste,
     Clock,
     Download,
+    GraduationCap,
     Link2,
     ListChecks,
     Loader2,
@@ -81,6 +82,17 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
           }[]
         | null
     >(null);
+
+    useEffect(() => {
+        const onLogout = () => {
+            setData(null);
+            setMyTasks(null);
+            setError(null);
+            setNotice(null);
+        };
+        window.addEventListener("logout", onLogout);
+        return () => window.removeEventListener("logout", onLogout);
+    }, []);
 
     useEffect(() => {
         if (!data || !accountId) return;
@@ -247,22 +259,27 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
     if (!accountId) {
         return (
             <div className="w-full h-full flex items-center justify-center p-8">
-                <Card className="max-w-sm">
-                    <CardHeader>
-                        <CardTitle>Chưa đăng nhập</CardTitle>
-                        <CardDescription>
+                <div className="flex w-full max-w-md flex-col items-center gap-5 rounded-3xl border border-slate-700 bg-slate-800/50 p-8 text-center shadow-xl backdrop-blur">
+                    <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/20 p-4 ring-1 ring-indigo-400/40">
+                        <GraduationCap className="size-8 text-indigo-400" />
+                    </span>
+                    <div className="flex flex-col gap-1.5">
+                        <h2 className="text-xl font-semibold text-slate-100">
+                            Chưa đăng nhập
+                        </h2>
+                        <p className="text-sm text-slate-400">
                             Đăng nhập bằng tài khoản HCMUT để xem lịch học, lịch
                             thi và deadline của bạn.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button
-                            onClick={() => (window.location.href = "/login")}
-                        >
-                            Đăng nhập
-                        </Button>
-                    </CardContent>
-                </Card>
+                        </p>
+                    </div>
+                    <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={() => (window.location.href = "/login")}
+                    >
+                        Đăng nhập ngay
+                    </Button>
+                </div>
             </div>
         );
     }

@@ -36,6 +36,10 @@ export default function Sidebar_Groups() {
         };
     }, [user?.username, user?.mssv, userLoading]);
 
+    if (!user?.username) {
+        return null;
+    }
+
     return (
         <div className="w-full mt-4 bg-slate-700 text-slate-800 dark:text-white rounded-3xl p-4 flex flex-[0.7] flex-col gap-3 min-h-0">
             <a

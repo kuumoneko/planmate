@@ -26,7 +26,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const collection = db.collection('data');
 
-        await check(collection, username);
+        // Only POSTs may auto-create docs (login/profile writes). GETs must
+        // never spawn blank accounts for arbitrary usernames.
+        if (mode === "post") {
+            await check(collection, username);
+        }
         
         if (doc === "password") {
             if (mode === "get") {
@@ -44,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 else {
                     const { password } = results[0];
                     if (password.length === 0) {
-                        return res.status(200).json({ ok: true, data: true });
+                        return res.status(200).json({ ok: false, data: "Mật khẩu chưa được đặt — hãy đăng nhập qua mybk để kích hoạt tài khoản" });
                     }
                     const temp = revert(password)
                     const ress = await verify(data.password, temp)

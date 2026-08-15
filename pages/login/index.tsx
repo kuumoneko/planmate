@@ -34,12 +34,6 @@ export default function Login() {
             return setlogin(false);
         }
         const normalized = username.trim().split("@")[0];
-        if (!/^[a-z]+\.[a-z]+[a-z0-9]+$/i.test(normalized)) {
-            alert(
-                "Tên đăng nhập không hợp lệ. Phải có dạng <tên>.<họ><kí tự ngẫu nhiên> — VD: viet.anh9q1. Email dạng user@hcmut.edu.vn cũng được chấp nhận."
-            );
-            return setlogin(false);
-        }
         async function run() {
             try {
                 await logining(normalized, convert(password));

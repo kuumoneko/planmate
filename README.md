@@ -37,9 +37,7 @@ bun run dev
 | Biến | Bắt buộc | Mô tả |
 |---|---|---|
 | `MONGODB_URI` | Có | Chuỗi kết nối MongoDB |
-| `GEMINI_API_KEY` | Không* | Key Google Gemini cho nhập liệu AI & LMS (thay thế: `GOOGLE_GEMINI_API_KEY` / `NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY`; `GEMINI_MODEL` để chọn model) |
-
-\* Chỉ bắt buộc khi dùng tính năng nhập liệu AI hoặc deadline LMS.
+| `GEMINI_API_KEY` | Có | Key Google Gemini cho nhập liệu AI & LMS (thay thế: `GOOGLE_GEMINI_API_KEY` / `NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY`; `GEMINI_MODEL` để chọn model) |
 
 ### Scripts (đều dùng Bun)
 

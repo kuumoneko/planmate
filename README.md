@@ -45,10 +45,10 @@ bun run dev
 
 | Script | Lệnh |
 |---|---|
-| dev | `node node_modules/next/dist/bin/next dev -p 3005` |
-| build | `node node_modules/next/dist/bin/next build` |
-| start | `node node_modules/next/dist/bin/next start -p 3005` |
-| typecheck | `node node_modules/typescript/bin/tsc --noEmit` |
+| dev | `bunx next dev -p 3005` |
+| build | `bunx next build` |
+| start | `bunx next start -p 3005` |
+| typecheck | `bunx tsc --noEmit` |
 | test | `bun test` (Bun's built-in test runner) |
 
 ## Tính năng

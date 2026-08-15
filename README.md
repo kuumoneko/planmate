@@ -13,7 +13,7 @@
 - **UI**: React 19, Tailwind CSS v4, [shadcn/ui](https://ui.shadcn.com), Lucide Icons
 - **Database**: MongoDB (`mongodb` driver)
 - **AI**: Google Gemini ([`@google/genai`](https://www.npmjs.com/package/@google/genai)) cho nhập liệu ảnh và phân tích deadline LMS
-- **Calendar**: RFC 5545 `.ics` (thư viện `ics`) + `googleapis` (tùy chọn, cờ bật/tắt)
+- **Calendar**: RFC 5545 `.ics` (thư viện `ics`)
 
 ## Cài đặt
 
@@ -27,12 +27,6 @@ bun install
 # 3. Cấu hình .env (tạo file .env trong thư mục gốc):
 MONGODB_URI=mongodb+srv://...
 GEMINI_API_KEY=xxxx
-# Tùy chọn — đồng bộ Google Calendar:
-NEXT_PUBLIC_GOOGLE_CALENDAR_ENABLED=true
-GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=xxxx
-GOOGLE_REDIRECT_URI=https://your-app.vercel.app/api/google/callback
-NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 # 4. Chạy:
 bun run dev
@@ -44,9 +38,6 @@ bun run dev
 |---|---|---|
 | `MONGODB_URI` | Có | Chuỗi kết nối MongoDB |
 | `GEMINI_API_KEY` | Không* | Key Google Gemini cho nhập liệu AI & LMS (thay thế: `GOOGLE_GEMINI_API_KEY` / `NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY`; `GEMINI_MODEL` để chọn model) |
-| `NEXT_PUBLIC_GOOGLE_CALENDAR_ENABLED` | Không | Bật tính năng đồng bộ Google Calendar |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Không | OAuth client Google (chỉ khi bật Google Calendar) |
-| `GOOGLE_REDIRECT_URI` / `NEXT_PUBLIC_APP_URL` | Không | Redirect URI và URL ứng dụng cho OAuth |
 
 \* Chỉ bắt buộc khi dùng tính năng nhập liệu AI hoặc deadline LMS.
 
@@ -74,26 +65,12 @@ bun run dev
 - **Xuất dữ liệu** (`/export`):
   - Xuất CSV,
   - Tải `.ics` cho Apple Calendar / Outlook,
-  - **Webcal subscription URL**: `webcal://{host}/api/calendar/{mssv}.ics` (tự cập nhật từ cache server),
-  - **Đồng bộ Google Calendar OAuth** (tùy chọn, xem bên dưới).
+  - **Webcal subscription URL**: `webcal://{host}/api/calendar/{mssv}.ics` (tự cập nhật từ cache server).
 - **Nhóm học tập (BTL)** (`/groups`):
   - Tạo nhóm, mời thành viên bằng email `@hcmut.edu.vn` **hoặc tên đăng nhập** (bao gồm tài khoản cục bộ),
   - **Tìm lịch rảnh chung** (so sánh thời khóa biểu của mọi thành viên, cửa sổ mặc định 07:00-21:00, tối thiểu 30 phút),
   - Quản lý nhiệm vụ & deadline với thanh tiến độ,
-  - Deadline tự động tạo tệp `.ics` mời tất cả thành viên, và đẩy lên Google Calendar khi được bật.
-
-## Đồng bộ Google Calendar (tùy chọn)
-
-Luồng OAuth chỉ bật khi `NEXT_PUBLIC_GOOGLE_CALENDAR_ENABLED=true` và có `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
-
-1. Tạo project tại https://console.cloud.google.com, bật **Google Calendar API**.
-2. Tạo **OAuth client (Web)**, cấp quyền `https://www.googleapis.com/auth/calendar.events`, đặt redirect URI là `{APP_URL}/api/google/callback`.
-3. Đặt các biến môi trường ở trên. Người dùng bấm "Kết nối Google Calendar" trên `/export` để ủy quyền.
-
-Hành vi khi bật:
-- Lớp học → sự kiện lặp lại (`RRULE` hàng tuần + `EXDATE` cho các tuần nghỉ giữa kỳ), nhắc trước 30 phút.
-- Lịch thi → sự kiện một lần, nhắc qua email trước 1 ngày.
-- Deadline nhóm → lời mời sự kiện tới tất cả thành viên (đẩy qua tài khoản của trưởng nhóm).
+  - Deadline tự động tạo tệp `.ics` mời tất cả thành viên.
 
 ## Triển khai Vercel
 

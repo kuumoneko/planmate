@@ -8,12 +8,13 @@ import {
     Clock,
     Download,
     Link2,
+    ListChecks,
     Loader2,
     Plus,
     Trash2,
     Upload,
 } from "lucide-react";
-import type { ParsedDeadline, StudentDashboardData } from "@/types";
+import type { ParsedDeadline, StudentDashboardData, Task } from "@/types";
 import { useUser } from "@/hooks/useUser";
 import { extractFileContent } from "@/lib/file-to-text";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
@@ -35,6 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CAMPUS_ADDRESSES, campusFromRoom } from "../../../lib/location-helper";
 
 const DAY_NAMES = [
@@ -69,6 +72,103 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
     const [addOpen, setAddOpen] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [removingKey, setRemovingKey] = useState<string | null>(null);
+    const [myTasks, setMyTasks] = useState<
+        | {
+              task: Task;
+              groupId: string;
+              groupName: string;
+              courseCode: string;
+          }[]
+        | null
+    >(null);
+
+    useEffect(() => {
+        if (!data || !accountId) return;
+        let cancelled = false;
+        fetch(
+            `/api/groups?username=${encodeURIComponent(accountId)}&withTasks=1`,
+        )
+            .then((r) => r.json())
+            .then((json) => {
+                if (!json.ok || cancelled) return;
+                const email = (data.profile?.email ?? "").toLowerCase();
+                const rows: {
+                    task: Task;
+                    groupId: string;
+                    groupName: string;
+                    courseCode: string;
+                }[] = [];
+                for (const g of (json.data ?? []) as {
+                    id: string;
+                    name: string;
+                    courseCode: string;
+                    tasks: Task[];
+                }[]) {
+                    for (const t of g.tasks ?? []) {
+                        if (
+                            t.assigneeEmail &&
+                            t.assigneeEmail.toLowerCase() === email
+                        ) {
+                            rows.push({
+                                task: t,
+                                groupId: g.id,
+                                groupName: g.name,
+                                courseCode: g.courseCode,
+                            });
+                        }
+                    }
+                }
+                rows.sort((a, b) =>
+                    (a.task.deadline ?? "").localeCompare(
+                        b.task.deadline ?? "",
+                    ),
+                );
+                setMyTasks(rows);
+            })
+            .catch(() => {
+                if (!cancelled) setMyTasks([]);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [data, accountId]);
+
+    const toggleMyTask = async (groupId: string, task: Task) => {
+        const nextStatus =
+            task.status === "done"
+                ? "todo"
+                : task.status === "in_progress"
+                  ? "done"
+                  : "in_progress";
+        try {
+            // alert(user?.mssv + " " + task.id + " " + nextStatus);
+            const res = await fetch(`/api/groups/${groupId}/tasks`, {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    studentId: user?.mssv,
+                    taskId: task.id,
+                    status: nextStatus,
+                }),
+            });
+            const json = await res.json();
+            if (!json.ok)
+                throw new Error(json.data ?? "Không cập nhật được trạng thái");
+            setMyTasks((prev) =>
+                (prev ?? []).map((r) =>
+                    r.task.id === task.id
+                        ? { ...r, task: { ...r.task, ...json.data } }
+                        : r,
+                ),
+            );
+        } catch (e) {
+            setNotice(
+                e instanceof Error
+                    ? e.message
+                    : "Không cập nhật được trạng thái",
+            );
+        }
+    };
 
     const load = useCallback(async () => {
         if (!accountId) return;
@@ -361,124 +461,269 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                 </Card>
             </section>
 
-            <Card>
-                <CardHeader className="flex-row items-start justify-between space-y-0">
-                    <div>
+            <section className="grid gap-4 md:grid-cols-2">
+                <Card>
+                    <CardHeader className="flex-row items-start justify-between space-y-0">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <Link2 className="size-4" /> Deadline từ LMS
+                            </CardTitle>
+                            <CardDescription>
+                                {lmsCourses.length} môn học đã quét ·{" "}
+                                {deadlines.length} deadline
+                            </CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPasteOpen(true)}
+                            >
+                                <ClipboardPaste /> Dán nội dung
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAddOpen(true)}
+                            >
+                                <Plus /> Thêm thủ công
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={() => setUploadOpen(true)}
+                            >
+                                <Upload /> Tải lên từ file
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-2">
+                        {deadlines.length === 0 && (
+                            <p className="text-muted-foreground">
+                                Chưa có dữ liệu LMS. Tải lên file trang bài tập
+                                từ LMS hoặc dán nội dung bài tập.
+                            </p>
+                        )}
+                        <div className="no-scrollbar flex max-h-[min(26rem,75vh)] flex-col gap-2 overflow-y-auto overscroll-contain">
+                            {deadlines.map((d, i) => {
+                                const overdue = d.dueDate < today;
+                                const soon = !overdue && d.dueDate <= today;
+                                return (
+                                    <div
+                                        key={`${d.courseCode}-${d.taskName}-${i}`}
+                                        className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2"
+                                    >
+                                        <div className="min-w-0">
+                                            <p
+                                                className="truncate font-medium"
+                                                title={d.taskName}
+                                            >
+                                                {d.taskName}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {d.courseCode} · Hạn:{" "}
+                                                {new Date(
+                                                    d.dueDate,
+                                                ).toLocaleDateString("vi-VN")}
+                                                {d.dueTime
+                                                    ? ` ${d.dueTime}`
+                                                    : ""}
+                                                {d.weight !== null
+                                                    ? ` · ${Math.round(d.weight * 100)}%`
+                                                    : ""}
+                                            </p>
+                                            {d.attachments &&
+                                                d.attachments.length > 0 && (
+                                                    <p className="mt-1 flex flex-wrap gap-2 text-xs text-primary">
+                                                        {d.attachments.map(
+                                                            (a) => (
+                                                                <a
+                                                                    key={
+                                                                        a.url ||
+                                                                        a.name
+                                                                    }
+                                                                    href={a.url}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="underline underline-offset-2"
+                                                                >
+                                                                    {a.name}
+                                                                </a>
+                                                            ),
+                                                        )}
+                                                    </p>
+                                                )}
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            <Badge
+                                                variant={
+                                                    overdue
+                                                        ? "destructive"
+                                                        : soon
+                                                          ? "default"
+                                                          : "secondary"
+                                                }
+                                            >
+                                                {overdue
+                                                    ? "Quá hạn"
+                                                    : "Còn hạn"}
+                                            </Badge>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                title="Xóa deadline này"
+                                                aria-label="Xóa deadline này"
+                                                disabled={removingKey !== null}
+                                                onClick={() =>
+                                                    void removeDeadline(
+                                                        `${d.courseCode}-${d.taskName}-${i}`,
+                                                        d,
+                                                    )
+                                                }
+                                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Link2 className="size-4" /> Deadline trên LMS
+                            <ListChecks className="size-4" /> Công việc của tôi
+                            {myTasks &&
+                                myTasks.filter(
+                                    (r) => r.task.status === "in_progress",
+                                ).length > 0 && (
+                                    <Badge variant="secondary">
+                                        {
+                                            myTasks.filter(
+                                                (r) =>
+                                                    r.task.status ===
+                                                    "in_progress",
+                                            ).length
+                                        }{" "}
+                                        đang làm
+                                    </Badge>
+                                )}
                         </CardTitle>
-                        <CardDescription>
-                            {lmsCourses.length} môn học đã quét ·{" "}
-                            {deadlines.length} deadline
-                        </CardDescription>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPasteOpen(true)}
-                        >
-                            <ClipboardPaste /> Dán nội dung
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setAddOpen(true)}
-                        >
-                            <Plus /> Thêm thủ công
-                        </Button>
-                        <Button size="sm" onClick={() => setUploadOpen(true)}>
-                            <Upload /> Tải lên từ file
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2">
-                    {deadlines.length === 0 && (
-                        <p className="text-muted-foreground">
-                            Chưa có dữ liệu LMS. Tải lên file trang bài tập từ
-                            LMS hoặc dán nội dung bài tập.
-                        </p>
-                    )}
-                    <div className="no-scrollbar flex max-h-[min(26rem,75vh)] flex-col gap-2 overflow-y-auto overscroll-contain">
-                        {deadlines.map((d, i) => {
-                            const overdue = d.dueDate < today;
-                            const soon = !overdue && d.dueDate <= today;
-                            return (
-                                <div
-                                    key={`${d.courseCode}-${d.taskName}-${i}`}
-                                    className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2"
-                                >
-                                    <div className="min-w-0">
-                                        <p
-                                            className="truncate font-medium"
-                                            title={d.taskName}
-                                        >
-                                            {d.taskName}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {d.courseCode} · Hạn:{" "}
-                                            {new Date(
-                                                d.dueDate,
-                                            ).toLocaleDateString("vi-VN")}
-                                            {d.dueTime ? ` ${d.dueTime}` : ""}
-                                            {d.weight !== null
-                                                ? ` · ${Math.round(d.weight * 100)}%`
-                                                : ""}
-                                        </p>
-                                        {d.attachments &&
-                                            d.attachments.length > 0 && (
-                                                <p className="mt-1 flex flex-wrap gap-2 text-xs text-primary">
-                                                    {d.attachments.map((a) => (
-                                                        <a
-                                                            key={
-                                                                a.url || a.name
-                                                            }
-                                                            href={a.url}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="underline underline-offset-2"
-                                                        >
-                                                            {a.name}
-                                                        </a>
-                                                    ))}
-                                                </p>
-                                            )}
-                                    </div>
-                                    <div className="flex shrink-0 items-center gap-1">
-                                        <Badge
-                                            variant={
-                                                overdue
-                                                    ? "destructive"
-                                                    : soon
-                                                      ? "default"
-                                                      : "secondary"
-                                            }
-                                        >
-                                            {overdue ? "Quá hạn" : "Còn hạn"}
-                                        </Badge>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            title="Xóa deadline này"
-                                            aria-label="Xóa deadline này"
-                                            disabled={removingKey !== null}
-                                            onClick={() =>
-                                                void removeDeadline(
-                                                    `${d.courseCode}-${d.taskName}-${i}`,
-                                                    d,
-                                                )
-                                            }
-                                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                        >
-                                            <Trash2 className="size-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </CardContent>
-            </Card>
+                        <CardDescription>Nhiệm vụ của bạn</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-2">
+                        {myTasks === null ? (
+                            <div className="flex flex-col gap-2">
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        ) : myTasks.length === 0 ? (
+                            <p className="text-muted-foreground">
+                                Chưa có công việc nào được giao cho bạn.
+                            </p>
+                        ) : (
+                            <div className="no-scrollbar flex max-h-[min(26rem,75vh)] flex-col gap-2 overflow-y-auto overscroll-contain">
+                                {myTasks.map(
+                                    ({
+                                        task,
+                                        groupId,
+                                        groupName,
+                                        courseCode,
+                                    }) => {
+const overdue = Boolean(
+                                            task.deadline &&
+                                            task.status !== "done" &&
+                                            task.deadline <
+                                                new Date().toISOString(),
+                                        );
+                                        const checkboxClass =
+                                            task.status === "done"
+                                                ? "data-[state=checked]:border-green-500! data-[state=checked]:bg-green-500! data-[state=checked]:text-white!"
+                                                : overdue
+                                                  ? "data-[state=checked]:border-red-500! data-[state=checked]:bg-red-500! data-[state=checked]:text-white! data-[state=indeterminate]:border-red-500! data-[state=indeterminate]:bg-red-500! data-[state=indeterminate]:text-white!"
+                                                  : task.status ===
+                                                      "in_progress"
+                                                    ? "data-[state=indeterminate]:border-amber-400! data-[state=indeterminate]:bg-amber-400! data-[state=indeterminate]:text-white!"
+                                                    : "data-[state=unchecked]:border-blue-500!";
+                                        return (
+                                            <div
+                                                key={task.id}
+                                                className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2"
+                                                title={groupName}
+                                            >
+                                                <Checkbox
+                                                    className={checkboxClass}
+                                                    checked={
+                                                        task.status === "done"
+                                                            ? true
+                                                            : task.status ===
+                                                                "in_progress"
+                                                              ? "indeterminate"
+                                                              : false
+                                                    }
+                                                    onCheckedChange={() =>
+                                                        void toggleMyTask(
+                                                            groupId,
+                                                            task,
+                                                        )
+                                                    }
+                                                />
+                                                <div className="min-w-0 flex-1">
+                                                    <p
+                                                        className={`truncate font-medium ${
+                                                            task.status ===
+                                                            "done"
+                                                                ? "line-through text-muted-foreground"
+                                                                : ""
+                                                        }`}
+                                                    >
+                                                        {task.title}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {courseCode && (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="mr-1 text-[10px]"
+                                                            >
+                                                                {courseCode}
+                                                            </Badge>
+                                                        )}
+                                                        {task.deadline
+                                                            ? `Hạn: ${new Date(
+                                                                  task.deadline,
+                                                              ).toLocaleDateString(
+                                                                  "vi-VN",
+                                                              )}`
+                                                            : "Không có hạn"}
+                                                    </p>
+                                                </div>
+                                                {overdue && (
+                                                    <Badge variant="destructive">
+                                                        Quá hạn
+                                                    </Badge>
+                                                )}
+                                                {task.status ===
+                                                    "in_progress" && (
+                                                    <Badge variant="secondary">
+                                                        Đang làm
+                                                    </Badge>
+                                                )}
+                                                {task.status === "todo" && (
+                                                    <Badge variant="secondary">
+                                                        Nhiệm vụ
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        );
+                                    },
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </section>
 
             <footer className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 {source === "none" && (

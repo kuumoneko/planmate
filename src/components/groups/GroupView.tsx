@@ -384,14 +384,32 @@ export default function GroupView({
                                             t.status !== "done" &&
                                             new Date(t.deadline) < new Date()
                                     );
+                                    const checkboxClass =
+                                        t.status === "done"
+                                            ? "data-[state=checked]:border-green-500! data-[state=checked]:bg-green-500! data-[state=checked]:text-white!"
+                                            : overdue
+                                              ? "data-[state=checked]:border-red-500! data-[state=checked]:bg-red-500! data-[state=checked]:text-white! data-[state=indeterminate]:border-red-500! data-[state=indeterminate]:bg-red-500! data-[state=indeterminate]:text-white!"
+                                              : t.status === "in_progress"
+                                                ? "data-[state=indeterminate]:border-amber-400! data-[state=indeterminate]:bg-amber-400! data-[state=indeterminate]:text-white!"
+                                                : "data-[state=unchecked]:border-blue-500!";
                                     return (
                                         <div
                                             key={t.id}
                                             className="flex items-center gap-3 rounded-lg border p-3"
                                         >
                                             <Checkbox
-                                                checked={t.status === "done"}
-                                                onCheckedChange={() => toggleTask(t)}
+                                                className={checkboxClass}
+                                                checked={
+                                                    t.status === "done"
+                                                        ? true
+                                                        : t.status ===
+                                                            "in_progress"
+                                                          ? "indeterminate"
+                                                          : false
+                                                }
+                                                onCheckedChange={() =>
+                                                    toggleTask(t)
+                                                }
                                             />
                                             <div className="min-w-0 flex-1">
                                                 <p

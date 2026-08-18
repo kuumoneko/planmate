@@ -11,7 +11,6 @@ import {
     Trash2,
     TriangleAlert,
     UserMinus,
-    UserPlus,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +23,6 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskCreateDialog from "./TaskCreateDialog";
@@ -61,7 +59,6 @@ export default function GroupView({
     const [slots, setSlots] = useState<FreeTimeSlot[] | null>(null);
     const [slotMeta, setSlotMeta] = useState<{ memberCount: number; totalMembers: number } | null>(null);
     const [freeLoading, setFreeLoading] = useState(false);
-    const [inviteEmail, setInviteEmail] = useState("");
     const [error, setError] = useState("");
     const [notice, setNotice] = useState("");
 
@@ -103,26 +100,6 @@ export default function GroupView({
             setError(e.message);
         } finally {
             setFreeLoading(false);
-        }
-    };
-
-    const invite = async () => {
-        if (!inviteEmail.trim()) return;
-        setError("");
-        try {
-            const data = await api<{ group: Group; resolved: boolean }>(
-                `/api/groups/${group.id}/members`,
-                { method: "POST", body: { studentId: identity, email: inviteEmail } }
-            );
-            setInviteEmail("");
-            onGroupChanged(data.group);
-            setNotice(
-                data.resolved
-                    ? "Đã thêm thành viên. Nhắc họ đăng nhập vào web này để đồng bộ lịch học."
-                    : `Đã thêm ${inviteEmail}. Tài khoản này chưa đăng nhập — thành viên phải đăng nhập vào web này ít nhất 1 lần để đồng bộ lịch học.`
-            );
-        } catch (e: any) {
-            setError(e.message);
         }
     };
 
@@ -214,7 +191,7 @@ export default function GroupView({
                 <Card className="lg:h-full lg:flex lg:flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">Thành viên ({group.members.length})</CardTitle>
-                        <CardDescription>Mời bạn học bằng email HCMUT hoặc tên đăng nhập</CardDescription>
+                        <CardDescription>Thêm bạn học đã đăng ký trên web</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
                         <div className="flex flex-col gap-2 max-h-64 overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0">
@@ -264,17 +241,6 @@ export default function GroupView({
                         </div>
                         {isLeader && (
                             <div className="flex flex-col gap-2 pt-2 border-t">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={inviteEmail}
-                                        onChange={(e) => setInviteEmail(e.target.value)}
-                                        placeholder="mssv@hcmut.edu.vn hoặc username"
-                                        onKeyDown={(e) => e.key === "Enter" && invite()}
-                                    />
-                                    <Button variant="outline" size="icon" onClick={invite}>
-                                        <UserPlus className="h-4 w-4" />
-                                    </Button>
-                                </div>
                                 <AddMemberDialog
                                     group={group}
                                     identity={identity}

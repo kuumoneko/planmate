@@ -13,9 +13,9 @@ import {
 /**
  * /api/groups/[id]/members
  *  GET    ?q=<term>         -> search app users (leader only)
- *  POST   {studentId?, username?, email}    -> invite member by HCMUT email
- *                                              or app username (leader only)
- *  POST   {studentId?, username?, username} -> add member picked from the database (leader only)
+ *  POST   {studentId?, username?, email}    -> add member by app email or username
+ *                                              (registered users only, leader only)
+ *  POST   {studentId?, username?, memberUsername} -> add member picked from the database (leader only)
  *  DELETE {studentId?, username?, email}    -> remove member (leader or self)
  * Identity is MSSV first (`studentId`), `username` accepted as fallback.
  */
@@ -51,30 +51,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             if (email.length > 0) {
-                if (HCMUT_EMAIL_RE.test(email)) {
-                    // mybk email invite (member key = the email)
-                    if (group.members.some((m) => m.email === email)) {
-                        return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });
-                    }
-                    const resolved = await resolveUserByEmail(email);
-                    const updated = await addMember(group, email, resolved);
-                    return res.status(200).json({
-                        ok: true,
-                        data: { group: updated, resolved: Boolean(resolved) },
-                    });
-                }
-                // Local-account invite (member key = the username)
-                const resolved = await resolveUserByUsername(email);
+                const isHcmutEmail = HCMUT_EMAIL_RE.test(email);
+                const resolved = isHcmutEmail
+                    ? await resolveUserByEmail(email)
+                    : await resolveUserByUsername(email);
                 if (!resolved) {
                     return res.status(400).json({
                         ok: false,
-                        data: "Email phải là email HCMUT (@hcmut.edu.vn) hoặc tên đăng nhập người dùng.",
+                        data: "Người dùng chưa đăng ký tài khoản trên web — hãy yêu cầu họ đăng nhập vào web này ít nhất 1 lần.",
                     });
                 }
-                if (group.members.some((m) => m.email === resolved.email)) {
+                const memberKey = (resolved as { email?: string }).email ?? email.toLowerCase();
+                if (group.members.some((m) => m.email === memberKey)) {
                     return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });
                 }
-                const updated = await addMember(group, resolved.email, resolved);
+                const updated = await addMember(group, memberKey, resolved);
                 return res.status(200).json({
                     ok: true,
                     data: { group: updated, resolved: true },
@@ -87,7 +78,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             const resolved = await resolveUserByUsername(memberUsername);
             if (!resolved) {
-                return res.status(404).json({ ok: false, data: "Không tìm thấy người dùng trong cơ sở dữ liệu" });
+                return res.status(400).json({
+                    ok: false,
+                    data: "Người dùng chưa đăng ký tài khoản trên web — hãy yêu cầu họ đăng nhập vào web này ít nhất 1 lần.",
+                });
             }
             if (group.members.some((m) => m.email === resolved.email)) {
                 return res.status(400).json({ ok: false, data: "Thành viên đã có trong nhóm" });

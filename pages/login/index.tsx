@@ -109,7 +109,7 @@ export default function Login() {
                                         <span className="font-medium text-slate-100">
                                             «{askLocal}»
                                         </span>{" "}
-                                        không giống tài khoản mybk (VD:{" "}
+                                        không giống tài khoản trường (VD:{" "}
                                         <span className="font-mono">viet.anh9q1</span>).
                                     </p>
                                     <p>

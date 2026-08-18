@@ -32,7 +32,7 @@ export default function Nav() {
                 }}
             >
                 <span className="cursor-auto select-none text-slate-800 dark:text-white hover:cursor-pointer">
-                    BK Calendar
+                    PlanMate
                 </span>
             </div>
             {mode === "row" ? (

@@ -8,11 +8,15 @@ import type { Metadata } from "next";
  * out of the App Router pages (see src/styles/globals.css).
  */
 export const metadata: Metadata = {
-    title: "BK Calendar",
-    description: "Lịch học, lịch thi và quản lý nhóm BTL cho sinh viên HCMUT",
+    title: "PlanMate",
+    description: "Lịch học, lịch thi và quản lý tiến độ BTL dành cho sinh viên",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
         <html lang="vi">
             <body className="app-root antialiased">{children}</body>

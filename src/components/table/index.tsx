@@ -8,106 +8,110 @@ export default function Table({
     subjects: SubjectInfo[];
     mode?: string;
 }) {
+    const isFilter = mode === "filter";
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     return (
-        <table className="w-full text-center mt-5 rounded-3xl min-w-125">
-            <thead>
-                <tr className="h-12.5">
-                    <th className="bg-slate-600 border-2 w-[15%] min-w-37.5">
-                        Môn học
-                    </th>
-                    <th className="bg-slate-700 border-2 w-[20%] min-w-37.5">
-                        Giảng viên
-                    </th>
-                    <th className="bg-slate-600 border-2 w-[5%] min-w-12.5">
-                        Lớp
-                    </th>
-                    <th className="bg-slate-700 border-2 w-[15%] min-w-12.5">
-                        Thời gian
-                    </th>
-                    <th className="bg-slate-600 border-2">Phòng</th>
-                </tr>
-            </thead>
-            <tbody>
-                {subjects.map((subject: SubjectInfo, index: number) => {
-                    const [hover, sethover] = useState(false);
+        <div className="w-full overflow-x-auto">
+            <table className="w-full text-center mt-5 rounded-3xl min-w-125">
+                <thead>
+                    <tr className="h-12.5">
+                        <th className="bg-slate-600 border-2 w-[15%] min-w-37.5">
+                            Môn học
+                        </th>
+                        <th className="bg-slate-700 border-2 w-[20%] min-w-37.5">
+                            Giảng viên
+                        </th>
+                        <th className="bg-slate-600 border-2 w-[5%] min-w-12.5">
+                            Lớp
+                        </th>
+                        <th className="bg-slate-700 border-2 w-[15%] min-w-12.5">
+                            Thời gian
+                        </th>
+                        <th className="bg-slate-600 border-2">Phòng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {subjects.map((subject: SubjectInfo, index: number) => {
+                        const hover = hoveredIndex === index;
 
-                    return (
-                        <tr
-                            key={index}
-                            className="h-12.5"
-                            onMouseEnter={() => {
-                                if (mode === "filter") sethover(true);
-                            }}
-                            onMouseLeave={() => {
-                                if (mode === "filter") sethover(false);
-                            }}
-                            onMouseDown={() => {
-                                if (mode === "filter" && hover) {
-                                    window.location.href = `/filter/edit/add?data=${encodeURIComponent(
-                                        JSON.stringify(subject)
-                                    )}`;
-                                }
-                            }}
-                        >
-                            <td
-                                className={
-                                    "border-2 " +
-                                    `${hover ? "bg-slate-500" : "bg-slate-600"}`
-                                }
+                        return (
+                            <tr
+                                key={index}
+                                className={`h-12.5 ${isFilter ? "hover:cursor-pointer" : ""}`}
+                                onMouseEnter={() => {
+                                    if (isFilter) setHoveredIndex(index);
+                                }}
+                                onMouseLeave={() => {
+                                    if (isFilter) setHoveredIndex(null);
+                                }}
+                                onClick={() => {
+                                    if (isFilter) {
+                                        window.location.href = `/filter/edit/add?data=${encodeURIComponent(
+                                            JSON.stringify(subject)
+                                        )}`;
+                                    }
+                                }}
                             >
-                                {subject.subject}
-                            </td>
-                            <td
-                                className={
-                                    "border-2 " +
-                                    `${hover ? "bg-slate-600" : "bg-slate-700"}`
-                                }
-                            >
-                                {subject.teacher.includes("Chưa biết")
-                                    ? "Chưa biết"
-                                    : subject.teacher}
-                            </td>
-                            <td
-                                className={
-                                    "border-2 " +
-                                    `${hover ? "bg-slate-500" : "bg-slate-600"}`
-                                }
-                            >
-                                {subject.class}
-                            </td>
-                            <td
-                                className={
-                                    "border-2 flex flex-col " +
-                                    `${hover ? "bg-slate-600" : "bg-slate-700"}`
-                                }
-                            >
-                                <span>{subject.startTime}</span>
-                                <span>{subject.endTime}</span>
-                            </td>
-                            <td
-                                className={
-                                    "border-2 " +
-                                    `${hover ? "bg-slate-500" : "bg-slate-600"}`
-                                }
-                            >
-                                <div className="flex flex-col">
-                                    <span>
-                                        {subject.room.includes("NHATHIDAU")
-                                            ? "NHATHIDAU"
-                                            : subject.room}
-                                    </span>
-                                    <span>
-                                        {subject.building.includes("1")
-                                            ? "CS1"
-                                            : "CS2"}
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
+                                <td
+                                    className={
+                                        "border-2 " +
+                                        `${hover ? "bg-slate-500" : "bg-slate-600"}`
+                                    }
+                                >
+                                    {subject.subject}
+                                </td>
+                                <td
+                                    className={
+                                        "border-2 " +
+                                        `${hover ? "bg-slate-600" : "bg-slate-700"}`
+                                    }
+                                >
+                                    {subject.teacher.includes("Chưa biết")
+                                        ? "Chưa biết"
+                                        : subject.teacher}
+                                </td>
+                                <td
+                                    className={
+                                        "border-2 " +
+                                        `${hover ? "bg-slate-500" : "bg-slate-600"}`
+                                    }
+                                >
+                                    {subject.class}
+                                </td>
+                                <td
+                                    className={
+                                        "border-2 flex flex-col " +
+                                        `${hover ? "bg-slate-600" : "bg-slate-700"}`
+                                    }
+                                >
+                                    <span>{subject.startTime}</span>
+                                    <span>{subject.endTime}</span>
+                                </td>
+                                <td
+                                    className={
+                                        "border-2 " +
+                                        `${hover ? "bg-slate-500" : "bg-slate-600"}`
+                                    }
+                                >
+                                    <div className="flex flex-col">
+                                        <span>
+                                            {subject.room.includes("NHATHIDAU")
+                                                ? "NHATHIDAU"
+                                                : subject.room}
+                                        </span>
+                                        <span>
+                                            {subject.building.includes("1")
+                                                ? "CS1"
+                                                : "CS2"}
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
     );
 }

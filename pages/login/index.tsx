@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect, useRef } from "react";
 import { AlertTriangle } from "lucide-react";
-import { useOrientationMode } from "@/hooks/display";
 import logining from "@/utils/data/login";
 import { convert } from "@/lib/pass";
 import {
@@ -83,22 +82,17 @@ export default function Login() {
         setNotice(`Đã quên lựa chọn cho «${username.trim()}».`);
     };
 
-    const mode = useOrientationMode();
     const savedLocalChoice =
         username.trim().length > 0 && getLocalLoginChoice(username.trim());
 
     return (
         <>
-            <div
-                className={`login ml-15 ${
-                    mode === "row" ? "mt-10" : "mt-6"
-                } flex flex-col items-center h-full w-[80%] overflow-y-auto`}
-            >
-                <h1 className="text-3xl w-full font-bold text-center mb-5 border-b-2 pb-3 flex flex-row items-center justify-center">
+            <div className="login self-center flex flex-col items-center h-full w-full max-w-md px-4 overflow-y-auto">
+                <h1 className="text-3xl w-full font-bold text-center mb-5 border-b-2 pb-3 flex flex-row items-center justify-center mt-auto">
                     <Hcmut_Logo height={40} width={40} />
                     Đăng nhập
                 </h1>
-                <div className="login_form flex flex-col">
+                <div className="login_form flex flex-col mb-auto">
                     {askLocal ? (
                         <div className="flex w-[95%] flex-col gap-3 rounded-xl bg-slate-800 px-4 py-4 text-sm">
                             <div className="flex items-start gap-2.5">
@@ -120,7 +114,7 @@ export default function Login() {
                             </div>
                             <div className="flex flex-col gap-2">
                                 <div
-                                    className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-center hover:cursor-pointer"
+                                    className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-center text-white hover:cursor-pointer"
                                     onClick={() => confirmLocal(true)}
                                 >
                                     Có, nhớ lựa chọn
@@ -144,7 +138,7 @@ export default function Login() {
                         <div className="flex flex-col w-full">
                             <label htmlFor="username">Tên tài khoản:</label>
                             <input
-                                className="text-slate-800 w-[95%] bg-slate-500 rounded-2xl px-4"
+                                className="text-slate-800 w-full bg-slate-500 rounded-2xl px-4 py-1.5"
                                 type="text"
                                 name="username"
                                 id="username"
@@ -154,9 +148,9 @@ export default function Login() {
                         </div>
                         <div className="flex flex-col w-full mt-1">
                             <label htmlFor="password">Mật khẩu:</label>
-                            <div className="flex flex-row ">
+                            <div className="flex flex-row items-center gap-2 w-full">
                                 <input
-                                    className="text-slate-800 w-[95%] mr-1.25 bg-slate-500 rounded-2xl px-4"
+                                    className="text-slate-800 flex-1 min-w-0 bg-slate-500 rounded-2xl px-4 py-1.5"
                                     type={hidden ? "password" : "text"}
                                     name="password"
                                     id="password"
@@ -165,7 +159,7 @@ export default function Login() {
                                         serpassword(e.target.value);
                                     }}
                                 />
-                                <div>
+                                <div className="shrink-0">
                                     <FontAwesomeIcon
                                         icon={hidden ? faEye : faEyeSlash}
                                         onClick={() => {
@@ -186,9 +180,9 @@ export default function Login() {
                                 <span>{notice}</span>
                             </div>
                         )}
-                        <div className="flex flex-row-reverse items-start mt-5 w-[95%]">
+                        <div className="flex flex-row-reverse items-start mt-5 w-full">
                             <div
-                                className="ml-10 bg-indigo-500 px-3 py-1.5 rounded-2xl hover:cursor-pointer"
+                                className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-white hover:cursor-pointer"
                                 onClick={() => {
                                     setlogin(true);
                                 }}

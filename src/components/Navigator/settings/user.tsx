@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import Hcmut_Logo from "../../Logo/index";
+import Logo from "../../Logo/index";
 import Logout from "../../../utils/logout";
 
-export default function Hcmut() {
+export default function User() {
     const [user, setuser] = useState<any>(null);
 
     useEffect(() => {
@@ -36,10 +36,8 @@ export default function Hcmut() {
                         }}
                     >
                         <span className=" w-35 border-solid rounded-[50px] bg-slate-800 text-slate-100 py-1.25 px-2.5 flex flex-row ml-4 hover:cursor-pointer hover:bg-slate-400 hover:text-slate-800">
-                            <Hcmut_Logo height={25} width={25} />
-                            <span className="text-black ml-2 mt-0.5">
-                                Đăng nhập
-                            </span>
+                            <Logo height={25} width={25} />
+                            <span className="ml-2 mt-0.5">Đăng nhập</span>
                         </span>
                     </div>
                 ) : (

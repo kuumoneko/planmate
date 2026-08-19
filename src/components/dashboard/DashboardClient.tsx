@@ -488,7 +488,7 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
 
             <section className="grid gap-4 md:grid-cols-2">
                 <Card>
-                    <CardHeader className="flex-row items-start justify-between space-y-0">
+                    <CardHeader className="flex-col items-start justify-between gap-3 sm:flex-row sm:space-y-0">
                         <div>
                             <CardTitle className="flex items-center gap-2">
                                 <Link2 className="size-4" /> Deadline từ LMS
@@ -498,7 +498,7 @@ export default function DashboardClient({ studentId }: { studentId: string }) {
                                 {deadlines.length} deadline
                             </CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"

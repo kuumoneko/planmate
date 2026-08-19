@@ -1,12 +1,10 @@
 import Loading from "@/components/Loading";
 import Table from "@/components/table";
-import { useOrientationMode } from "@/hooks/display";
 import { SubjectInfo } from "@/types";
 import mongodb from "@/utils/data/databsae";
 import { useEffect, useState } from "react";
 
 export default function Filter() {
-    const mode = useOrientationMode();
     const [filter, setfilter] = useState({ add: [], filter: [] });
     const [schedule, setschedule] = useState([]);
     const [class_code, set_class_code] = useState("");
@@ -65,17 +63,13 @@ export default function Filter() {
     }, [class_code]);
 
     return (
-        <div className="flex flex-col items-center justify-start h-full w-full mt-4 ml-4 overflow-y-auto">
-            <div className="h-[10%] w-full flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-start h-full w-full overflow-y-auto px-4">
+            <div className="w-full flex flex-col items-center justify-center py-4">
                 <div className="text-4xl">Bộ lọc</div>
             </div>
 
-            <div
-                className={`w-full ${
-                    mode === "col" ? "h-[35%]" : "h-[25%]"
-                } flex flex-col items-center justify-center`}
-            >
-                <span className="h-[50%] w-full flex flex-col items-center justify-center">
+            <div className="w-full flex flex-col items-center justify-center py-2">
+                <span className="w-full flex flex-col items-center justify-center pb-3">
                     <span>
                         Nhập mã Lớp để chọn môn học, nếu muốn thay đổi thông tin
                         thì nhập thông tin cần thay đổi ở Mục "Trước" và "Sau".
@@ -83,13 +77,13 @@ export default function Filter() {
                         tin ở "Sau"
                     </span>
                 </span>
-                <div className="h-[50%] w-full flex flex-col items-center">
+                <div className="w-full flex flex-col items-center">
                     <div>
                         Nhập mã lớp để tạo buổi học mới hoăc bấm vào bên để thêm
                         lớp
                     </div>
                     <div className="w-full flex flex-col items-center">
-                        <div className="flex flex-row">
+                        <div className="flex flex-row flex-wrap items-center justify-center">
                             <span>Mã lớp </span>
                             <input
                                 type="text"
@@ -114,11 +108,7 @@ export default function Filter() {
                         </div>
                         {filter_sub.length > 0 ? (
                             <div
-                                className={`grid ${
-                                    mode === "col"
-                                        ? "grid-cols-3"
-                                        : "grid-cols-4"
-                                } grid-rows-2 gap-2 w-full mt-3`}
+                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 w-full mt-3"
                             >
                                 {filter_sub.map((item: any) => {
                                     return (
@@ -149,7 +139,7 @@ export default function Filter() {
             </div>
 
             {filter.add.length > 0 ? (
-                <div className="w-full h-[35%] flex flex-col items-center">
+                <div className="w-full py-4 flex flex-col items-center">
                     <span>Thêm môn học</span>
                     <Table
                         subjects={filter.add.map((item: SubjectInfo) => {
@@ -163,13 +153,9 @@ export default function Filter() {
             )}
 
             {filter.filter.length > 0 ? (
-                <div
-                    className={`w-full ${
-                        mode === "col" ? "h-[20%]" : "h-[30%]"
-                    } flex flex-col items-center`}
-                >
+                <div className="w-full py-4 flex flex-col items-center">
                     <span>Bộ lọc</span>
-                    <div className="w-full grid grid-cols-3">
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {filter.filter.map((item: SubjectInfo) => {
                             const keys = Object.keys(item).filter(
                                 (item: string) => item !== "class"

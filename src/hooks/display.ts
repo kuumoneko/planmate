@@ -1,19 +1,39 @@
-import { useState, useEffect } from "react";
+"use client";
+import { useSyncExternalStore } from "react";
 
+const MEDIA_QUERY = "(max-width: 767px)";
+
+function subscribe(callback: () => void) {
+    const mql = window.matchMedia(MEDIA_QUERY);
+    mql.addEventListener("change", callback);
+    window.addEventListener("resize", callback);
+    window.addEventListener("orientationchange", callback);
+    return () => {
+        mql.removeEventListener("change", callback);
+        window.removeEventListener("resize", callback);
+        window.removeEventListener("orientationchange", callback);
+    };
+}
+
+function getSnapshot(): "row" | "col" {
+    return window.matchMedia(MEDIA_QUERY).matches ? "col" : "row";
+}
+
+function getServerSnapshot(): "row" | "col" {
+    return "row";
+}
+
+/**
+ * "row" = desktop/laptop layout (sidebar on the left), "col" = mobile layout
+ * (sidebar on top). Classified by viewport width (< 768px = mobile), so phones
+ * in landscape are treated as mobile too. Hydration-safe: no desktop-first
+ * paint flash on phones (useSyncExternalStore re-renders before paint when the
+ * client snapshot differs from the server one).
+ */
 export function useOrientationMode() {
-    const [mode, setMode] = useState<"row" | "col">("row");
+    return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
 
-    useEffect(() => {
-        const updateMode = () => {
-            const { innerWidth: width, innerHeight: height } = window;
-            setMode(height > width ? "col" : "row");
-        };
-
-        updateMode(); // Initial check
-        window.addEventListener("resize", updateMode);
-
-        return () => window.removeEventListener("resize", updateMode);
-    }, []);
-
-    return mode;
+export function useIsMobile() {
+    return useOrientationMode() === "col";
 }

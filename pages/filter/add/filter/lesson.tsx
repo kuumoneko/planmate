@@ -118,7 +118,7 @@ export default function lesson({
                     maxLength={4}
                 />
             </div>
-            <div className="mb-3">
+            <div className="mb-3 flex flex-row flex-wrap items-center gap-1">
                 Location
                 {" CS "}
                 <input
@@ -220,7 +220,7 @@ export default function lesson({
                     }
                     run();
                 }}
-                className="hover:cursor-pointer"
+                className="mt-3 inline-block bg-sky-700 hover:bg-sky-600 hover:cursor-pointer px-4 py-1.5 rounded-2xl"
             >
                 Lưu
             </div>

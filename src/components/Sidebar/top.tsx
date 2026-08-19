@@ -20,17 +20,23 @@ export function Side_bar_Button({ text, url }: { text: string; url: string }) {
             className={`cursor-default select-none h-12.5 rounded-xl flex flex-row items-center ${
                 mode === "col"
                     ? "flex-1 min-w-0 justify-center px-2 "
-                    : "w-full justify-start px-3 "
-            } bg-slate-700 pl-3.75 hover:bg-slate-600 hover:cursor-pointer`}
+                    : "w-full justify-start px-3 pl-3.75 "
+            } bg-slate-700 hover:bg-slate-600 hover:cursor-pointer`}
             onClick={() => {
                 window.location.href = url;
             }}
         >
             <FontAwesomeIcon
                 icon={Font_Awesome[text]}
-                className="text-slate-300 mr-1.25 pb-1.25"
+                className="text-slate-300 mr-1.25 pb-1.25 shrink-0"
             />
-            <span className="text-neutral-400 no-underline">{text}</span>
+            <span
+                className={`text-neutral-400 no-underline truncate ${
+                    mode === "col" ? "text-xs sm:text-sm" : "text-sm"
+                }`}
+            >
+                {text}
+            </span>
         </li>
     );
 }

@@ -158,7 +158,7 @@ export default function Day() {
         <div className="h-full w-full overflow-y-auto flex flex-col items-center">
             <div
                 className={`flex flex-col items-center ${
-                    mode === "row" ? "ml-10" : ""
+                    mode === "row" ? "lg:ml-10" : ""
                 } w-full max-w-[1500px] mt-10`}
             >
             {today_sche.length === 0 && closestDaySche.length === 0 ? (

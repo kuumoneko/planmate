@@ -64,17 +64,17 @@ export default function Page() {
     }, []);
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-start overflow-y-auto">
-            <div className="flex flex-col h-[10%] text-2xl font-bold">
+        <div className="w-full h-full flex flex-col items-center justify-start overflow-y-auto px-4">
+            <div className="flex flex-col py-3 text-2xl font-bold">
                 <span>{data?.subject}</span>
             </div>
-            <div className="flex flex-col h-[30%] w-[50%]">
+            <div className="flex flex-col w-full max-w-2xl">
                 {data?.teacher?.length && data?.teacher?.length > 0 && (
                     <div className="grid grid-cols-2 w-full">
                         <span className="flex flex-row items-center justify-center">
                             Giảng viên
                         </span>
-                        <span className="flex flex-row items-center justify-center">
+                        <span className="flex flex-row items-center justify-center min-w-0 break-words px-1">
                             {data?.teacher ?? ""}
                         </span>
                     </div>
@@ -236,7 +236,7 @@ export default function Page() {
                         </div>
                     )}
             </div>
-            <div className="flex flex-col h-[20%] w-[50%] items-center justify-center">
+            <div className="flex flex-col w-full max-w-2xl items-center justify-center py-4">
                 <div className="w-full flex flex-row items-center justify-center">
                     <span>Fix</span>
                 </div>
@@ -262,7 +262,7 @@ export default function Page() {
                             <span className="flex flex-row items-center justify-center">
                                 Thời gian
                             </span>
-                            <span className="flex flex-row items-center justify-center">{`${
+                            <span className="flex flex-row items-center justify-center min-w-0 break-words px-1">{`${
                                 data.startTime
                             } - ${data.endTime} ${
                                 data?.lesson === "" ? "" : `(${data.lesson})`
@@ -278,7 +278,7 @@ export default function Page() {
                             {typeof data?.dates !== "string" ? (
                                 <>
                                     {data?.dates?.length > 0 && (
-                                        <select className="bg-slate-500 text-slate-800 px-2 rounded-xl w-37.5">
+                                        <select className="bg-slate-500 text-slate-800 px-2 rounded-xl w-37.5 max-w-full">
                                             {data.dates.map((item: string) => {
                                                 return <option>{item}</option>;
                                             })}
@@ -335,9 +335,9 @@ export default function Page() {
                         </div>
                     )}
             </div>
-            <div className="h-[10%] w-[50%] flex flex-row items-center justify-center gap-24">
+            <div className="w-full max-w-2xl flex flex-row flex-wrap items-center justify-center gap-2 py-4">
                 <div
-                    className="flex flex-col items-center bg-red-500 hover:bg-red-400 hover:cursor-pointer w-16.25 rounded-2xl"
+                    className="flex flex-col items-center bg-red-500 hover:bg-red-400 hover:cursor-pointer min-w-20 px-2 py-1.5 rounded-2xl"
                     onClick={() => {
                         async function run() {
                             if (data === undefined) {
@@ -378,7 +378,7 @@ export default function Page() {
                     Xoá
                 </div>
                 <div
-                    className="flex flex-col items-center bg-sky-700 hover:bg-sky-600 hover:cursor-pointer w-16.25 rounded-2xl"
+                    className="flex flex-col items-center bg-sky-700 hover:bg-sky-600 hover:cursor-pointer min-w-20 px-2 py-1.5 rounded-2xl"
                     onClick={() => {
                         async function run() {
                             if (data === undefined) {

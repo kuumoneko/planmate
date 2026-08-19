@@ -45,10 +45,10 @@ export default function Page() {
         <div
             className={`h-full mt-6 w-full flex flex-col items-center justify-start overflow-y-auto`}
         >
-            <span className="text-2xl h-[5%] w-full flex flex-row items-center justify-center">
+            <span className="text-2xl w-full flex flex-row items-center justify-center py-2">
                 Add filter
             </span>
-            <div className="flex flex-col items-center justify-center h-[20%]">
+            <div className="flex flex-col items-center justify-center py-2">
                 <div className="flex flex-row items-center justify-center gap-2">
                     <div className="flex flex-row gap-2 items-center justify-center">
                         <input

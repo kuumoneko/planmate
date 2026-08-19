@@ -40,9 +40,9 @@ export default function Page() {
     const [building, setbuilding] = useState("");
 
     return (
-        <div className="h-full w-full flex flex-col items-center justify-start overflow-y-auto">
+        <div className="h-full w-full flex flex-col items-center justify-start overflow-y-auto px-4">
             <span className="text-2xl">Add subject</span>
-            <div>
+            <div className="w-full max-w-2xl">
                 <div className="mb-3">
                     class{" "}
                     <input
@@ -173,7 +173,7 @@ export default function Page() {
                 </div>
                 <div>
                     dates
-                    <div className="flex flex-row">
+                    <div className="flex flex-row flex-wrap items-center">
                         <input
                             type="text"
                             id="class"
@@ -212,7 +212,7 @@ export default function Page() {
                                     date: e.target.value,
                                 });
                             }}
-                            className="bg-slate-500 text-slate-800 px-2 rounded-xl w-37.5"
+                            className="bg-slate-500 text-slate-800 px-2 rounded-xl w-15"
                         />
 
                         <div
@@ -234,6 +234,7 @@ export default function Page() {
                                     year: date.year,
                                 });
                             }}
+                            className="ml-2 bg-slate-600 px-3 py-1 rounded-xl hover:cursor-pointer"
                         >
                             Add
                         </div>
@@ -261,7 +262,7 @@ export default function Page() {
                         </select>
                     </div>
                 </div>
-                <div>
+                <div className="flex flex-row flex-wrap items-center gap-1">
                     location {" CS "}
                     <input
                         type="text"
@@ -350,7 +351,7 @@ export default function Page() {
                         }
                         run();
                     }}
-                    className="hover:cursor-pointer"
+                    className="mt-3 inline-block bg-sky-700 hover:bg-sky-600 hover:cursor-pointer px-4 py-1.5 rounded-2xl"
                 >
                     Lưu
                 </div>

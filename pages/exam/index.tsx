@@ -34,7 +34,7 @@ export default function Exam_Schedule() {
     }, []);
     return (
         <div className="h-full w-full flex flex-col justify-center items-center overflow-y-auto">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 px-4 pt-2">
                 <span>Lịch thi</span>
                 <Button
                     variant="outline"

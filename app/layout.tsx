@@ -1,5 +1,5 @@
 import "@/styles/globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 /**
  * Root layout for the App Router tree (login, dashboard, ...).
@@ -8,8 +8,14 @@ import type { Metadata } from "next";
  * out of the App Router pages (see src/styles/globals.css).
  */
 export const metadata: Metadata = {
-    title: "PlanMate",
+    title: "NoZal",
     description: "Lịch học, lịch thi và quản lý tiến độ BTL dành cho sinh viên",
+    icons: [{ rel: "icon", url: "/nozal.png" }],
+};
+
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
 };
 
 export default function RootLayout({

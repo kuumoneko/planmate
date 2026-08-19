@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
-import { useOrientationMode } from "@/hooks/display";
 import logining from "@/utils/data/login";
 import { convert } from "@/lib/pass";
 
@@ -75,25 +74,19 @@ export default function Signup() {
         run();
     }, [signup]);
 
-    const mode = useOrientationMode();
-
     return (
         <>
-            <div
-                className={`login ml-15 ${
-                    mode === "row" ? "mt-10" : "mt-6"
-                } flex flex-col items-center h-full w-[80%] overflow-y-auto`}
-            >
-                <h1 className="text-3xl w-full font-bold text-center mb-5 border-b-2 pb-3 flex flex-row items-center justify-center">
+            <div className="login self-center flex flex-col items-center h-full w-full max-w-md px-4 overflow-y-auto">
+                <h1 className="text-3xl w-full font-bold text-center mb-5 border-b-2 pb-3 flex flex-row items-center justify-center mt-auto">
                     <Hcmut_Logo height={40} width={40} />
                     Đăng ký tài khoản
                 </h1>
-                <div className="login_form flex flex-col">
+                <div className="login_form flex flex-col mb-auto">
                     <form className="flex flex-col cursor-default select-none">
                         <div className="flex flex-col w-full">
                             <label htmlFor="username">Tên đăng nhập:</label>
                             <input
-                                className="text-slate-800 w-[95%] bg-slate-500 rounded-2xl px-4"
+                                className="text-slate-800 w-full bg-slate-500 rounded-2xl px-4 py-1.5"
                                 type="text"
                                 name="username"
                                 id="username"
@@ -104,7 +97,7 @@ export default function Signup() {
                         <div className="flex flex-col w-full mt-1">
                             <label htmlFor="name">Tên hiển thị:</label>
                             <input
-                                className="text-slate-800 w-[95%] bg-slate-500 rounded-2xl px-4"
+                                className="text-slate-800 w-full bg-slate-500 rounded-2xl px-4 py-1.5"
                                 type="text"
                                 name="name"
                                 id="name"
@@ -114,9 +107,9 @@ export default function Signup() {
                         </div>
                         <div className="flex flex-col w-full mt-1">
                             <label htmlFor="password">Mật khẩu:</label>
-                            <div className="flex flex-row ">
+                            <div className="flex flex-row items-center gap-2 w-full">
                                 <input
-                                    className="text-slate-800 w-[95%] mr-1.25 bg-slate-500 rounded-2xl px-4"
+                                    className="text-slate-800 flex-1 min-w-0 bg-slate-500 rounded-2xl px-4 py-1.5"
                                     type={hidden ? "password" : "text"}
                                     name="password"
                                     id="password"
@@ -125,7 +118,7 @@ export default function Signup() {
                                         serpassword(e.target.value);
                                     }}
                                 />
-                                <div>
+                                <div className="shrink-0">
                                     <FontAwesomeIcon
                                         icon={hidden ? faEye : faEyeSlash}
                                         onClick={() => {
@@ -138,7 +131,7 @@ export default function Signup() {
                         <div className="flex flex-col w-full mt-1">
                             <label htmlFor="confirm">Xác nhận mật khẩu:</label>
                             <input
-                                className="text-slate-800 w-[95%] bg-slate-500 rounded-2xl px-4"
+                                className="text-slate-800 w-full bg-slate-500 rounded-2xl px-4 py-1.5"
                                 type={hidden ? "password" : "text"}
                                 name="confirm"
                                 id="confirm"
@@ -149,14 +142,14 @@ export default function Signup() {
                             />
                         </div>
                         {error && (
-                            <div className="mt-4 flex w-[95%] items-start gap-2.5 rounded-xl bg-red-500/15 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/30">
+                            <div className="mt-4 flex w-full items-start gap-2.5 rounded-xl bg-red-500/15 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/30">
                                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
                                 <span>{error}</span>
                             </div>
                         )}
-                        <div className="flex flex-row-reverse items-start mt-5 w-[95%]">
+                        <div className="flex flex-row-reverse items-start mt-5 w-full">
                             <div
-                                className="ml-10 bg-indigo-500 px-3 py-1.5 rounded-2xl hover:cursor-pointer"
+                                className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-white hover:cursor-pointer"
                                 onClick={() => {
                                     setsignup(true);
                                 }}
@@ -168,7 +161,7 @@ export default function Signup() {
                                 )}
                             </div>
                         </div>
-                        <div className="mt-2 flex w-[95%] items-center justify-center">
+                        <div className="mt-2 flex w-full items-center justify-center">
                             <span className="text-sm text-slate-400">
                                 Đã có tài khoản?{" "}
                                 <a

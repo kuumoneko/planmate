@@ -135,17 +135,19 @@ export default function Filter({
                     </div>
                 )}
                 {selections === "time" && (
-                    <div>
-                        time{" "}
+                    <div className="flex flex-row flex-wrap items-center">
+                        {" CS "}
                         <input
                             type="text"
-                            className="bg-slate-600 text-slate-300 rounded-2xl px-2"
+                            id="class"
                             onChange={(e) => {
                                 setfilter({
                                     ...filter,
-                                    time: e.target.value,
+                                    building: e.target.value,
                                 });
                             }}
+                            className="bg-slate-500 text-slate-800 px-2 rounded-xl w-6.25"
+                            maxLength={1}
                         />
                     </div>
                 )}
@@ -279,7 +281,7 @@ export default function Filter({
                             }
                             run();
                         }}
-                        className="hover:cursor-pointer"
+                        className="mt-3 inline-block bg-sky-700 hover:bg-sky-600 hover:cursor-pointer px-4 py-1.5 rounded-2xl"
                     >
                         Lưu
                     </div>

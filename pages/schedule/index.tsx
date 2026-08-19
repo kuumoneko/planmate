@@ -181,8 +181,8 @@ export default function Schedule() {
 
     return (
         <div className="w-full h-full flex flex-col items-center gap-3 p-4 overflow-hidden">
-            <div className="flex items-center justify-between w-full max-w-5xl">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 w-full max-w-5xl">
+                <div className="flex flex-wrap items-center gap-2">
                     <Button
                         variant="outline"
                         size="sm"
@@ -203,7 +203,7 @@ export default function Schedule() {
                 </div>
                 <Badge variant="secondary">{this_week === week ? "Tuần hiện tại" : ""}</Badge>
             </div>
-            <div className="flex items-center justify-between w-full max-w-5xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 w-full max-w-5xl">
                 <Button
                     variant="outline"
                     size="sm"
@@ -212,7 +212,7 @@ export default function Schedule() {
                     <Upload className="size-4" />
                     Tải lên lịch học
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground max-w-full truncate">
                     {username}
                 </span>
             </div>

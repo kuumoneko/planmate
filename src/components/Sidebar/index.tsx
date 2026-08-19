@@ -4,7 +4,7 @@ import Sidebar_Groups from "./groups";
 export default function Sidebar({ mode }: { mode: "row" | "col" }) {
     const { height, width } = {
         height: mode === "col" ? "h-[25%]" : "h-full",
-        width: mode === "col" ? "w-full" : "w-[15%]",
+        width: mode === "col" ? "w-full" : "w-1/4 sm:w-[18%] lg:w-[15%] min-w-36",
     };
     return (
         <div

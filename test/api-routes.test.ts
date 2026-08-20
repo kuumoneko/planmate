@@ -260,6 +260,83 @@ describe("pages router API routes", () => {
         expect(res.statusCode).toBe(404);
     });
 
+    test("/api/groups/[id]/deadlines/import validates and parses for a real group", async () => {
+        const mod = await import("../pages/api/groups/[id]/deadlines/import");
+
+        // Wrong method + unknown group are deterministic without DB state.
+        const wrongMethod = await callPages(mod.default, {
+            method: "GET",
+            query: { id: "000000000000000000000000" },
+        });
+        expect(wrongMethod.statusCode).toBe(405);
+
+        const unknown = await callPages(mod.default, {
+            method: "POST",
+            query: { id: "000000000000000000000000" },
+            body: { studentId: "2510855", text: "x" },
+        });
+        expect(unknown.statusCode).toBe(404);
+
+        // Real group: identity/authz + regex parse + image-without-key (read-only).
+        const groupsMod = await import("../pages/api/groups");
+        const list = await callPages(groupsMod.default, {
+            method: "GET",
+            query: { studentId: "2510855" },
+        });
+        const group = Array.isArray(list.body.data) ? list.body.data[0] : undefined;
+        if (!group) return; // no seeded group on this DB — validation-only coverage above
+
+        const noIdentity = await callPages(mod.default, {
+            method: "POST",
+            query: { id: group.id },
+            body: { text: "x" },
+        });
+        expect(noIdentity.statusCode).toBe(400);
+
+        const forbidden = await callPages(mod.default, {
+            method: "POST",
+            query: { id: group.id },
+            body: { studentId: "no-such-user-xyz", text: "x" },
+        });
+        expect(forbidden.statusCode).toBe(403);
+
+        const ok = await callPages(mod.default, {
+            method: "POST",
+            query: { id: group.id },
+            body: {
+                studentId: group.createdBy,
+                text: [
+                    "CO3001 - Phân tích thiết kế hướng đối tượng",
+                    "- Bài tập 1 - hạn nộp lúc 23:59 ngày 15/04/2026 (10%) - giao cho Nam",
+                    "- Bài tập 2 - nộp ngày 30/05/2026 (0.2)",
+                ].join("\n"),
+            },
+        });
+        expect(ok.statusCode).toBe(200);
+        expect(ok.body.ok).toBe(true);
+        expect(ok.body.data.source).toBe("regex");
+        expect(ok.body.data.deadlines.length).toBeGreaterThanOrEqual(1);
+        expect(ok.body.data.deadlines[0]).toMatchObject({
+            taskName: "Bài tập 1",
+            dueDate: "2026-04-15",
+            dueTime: "23:59",
+            weight: 0.1,
+            assignee: "Nam",
+        });
+
+        const image = await callPages(mod.default, {
+            method: "POST",
+            query: { id: group.id },
+            body: {
+                studentId: group.createdBy,
+                image: "iVBORw0KGgo=",
+                mimeType: "image/png",
+            },
+        });
+        expect(image.statusCode).toBe(501);
+        expect(image.body.ok).toBe(false);
+    });
+
     test("/api/mybk/api/* reject empty params without hitting the network", async () => {
         const schedule = await import("../pages/api/mybk/api/schedule");
         const s = await callPages(schedule.default, {
@@ -384,10 +461,14 @@ describe("app router API routes", () => {
         expect(missing.json.ok).toBe(false);
 
         // Unknown student → empty dashboard → removal is a safe no-op.
+        // NOTE: groupByCourse stores the FULL course name as code (no code
+        // extraction), so the removal key must match "CO3001 - OOP" — using
+        // the bare code would leave a persisted deadline from a previous test
+        // run in place and make this test order-dependent.
         const unknown = await callApp(mod.POST, {
             body: {
                 studentId: "no-such-user",
-                courseCode: "CO3001",
+                courseCode: "CO3001 - OOP",
                 taskName: "Bài tập 1",
                 dueDate: "2026-04-15",
             },

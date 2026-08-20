@@ -24,6 +24,9 @@ const DATE_RE = /(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/;
 const DATE_YEARLESS_RE = /(\d{1,2})[/-](\d{1,2})(?![/-]\d)/;
 const HAN_RE = /(?:hạn(?: nộp| cuối| chót)?|nộp(?: bài)?|deadline|due|đến ngày|thời hạn|hết hạn|trước ngày)/i;
 const WEIGHT_RE = /(\d{1,3})%|(?<![/\d.])(0\.\d+|1\.0+)(?![\d%])/;
+/** "giao cho Nam", "người thực hiện Trần Thu Linh", "phụ trách Minh" — up to 2 name tokens. */
+const ASSIGNEE_RE =
+    /(?:giao(?: việc)?(?: cho)?|người thực hiện|người làm|phụ trách|đảm nhận|chịu trách nhiệm)\s*[:：]?\s*([A-Za-zÀ-ỹĐ][A-Za-zÀ-ỹĐ]*)(?:\s+([A-Za-zÀ-ỹĐ][A-Za-zÀ-ỹĐ]*))?/i;
 
 /** One matched line inside a course block. */
 interface RawTaskLine {
@@ -127,6 +130,10 @@ export function parseDeadlinesRegex(text: string): ParsedDeadline[] {
         }
 
         const weight = extractWeight(line);
+        const assigneeMatch = line.match(ASSIGNEE_RE);
+        const assignee = assigneeMatch
+            ? assigneeMatch[1] + (assigneeMatch[2] ? ` ${assigneeMatch[2]}` : "")
+            : undefined;
         const taskName = line
             .replace(DATE_RE, " ")
             .replace(DATE_ISO_RE, " ")
@@ -135,6 +142,7 @@ export function parseDeadlinesRegex(text: string): ParsedDeadline[] {
             .replace(TIME_12H_RE, " ")
             .replace(WEIGHT_RE, " ")
             .replace(/(?:hạn|deadline|due|đến ngày|nộp(?: bài)?|ngày|lúc|trọng số|tỷ lệ)\s*[:：]?\s*-?\s*/gi, " ")
+            .replace(ASSIGNEE_RE, " ")
             .replace(/\s*\(\s*\)\s*/g, " ")
             .replace(/[^\w\sÀ-ỹđĐ.,()/#&-]/g, " ")
             .replace(/\s+/g, " ")
@@ -155,6 +163,7 @@ export function parseDeadlinesRegex(text: string): ParsedDeadline[] {
             dueTime: extractDueTime(line),
             weight,
             courseName: courseName || "Chung",
+            assignee,
         });
         lastTaskName = name;
     }

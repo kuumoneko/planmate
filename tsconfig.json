@@ -27,6 +27,9 @@
       {
         "name": "next"
       }
+    ],
+    "types": [
+      "bun"
     ]
   },
   "include": [

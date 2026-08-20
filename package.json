@@ -10,7 +10,10 @@
         "build": "bunx next build",
         "start": "bunx next start -p 3005",
         "typecheck": "bunx tsc --noEmit",
-        "test": "bun test"
+        "test": "bun test",
+        "seed:demo": "bun run scripts/seed-demo.ts",
+        "clear:groups-tasks": "bun run scripts/clear-groups-tasks.ts",
+        "pdf:demo": "bun run scripts/generate-btl-pdf.ts"
     },
     "packageManager": "bun@1.3.14",
     "dependencies": {

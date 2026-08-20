@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK Calendar - Chạy đồ án, không chạy deadline</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(30,58,138,0.2) 0%, rgba(15,23,42,1) 100%);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-card">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="font-bold text-2xl tracking-tighter text-blue-400">NoZal</span>
+                </div>
+                <div>
+                    <a href="https://forms.gle/GE1PWenAhAdvaXT67" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/30">
+                        Nhận Tài Khoản
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-32 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center items-center text-center">
+        <div class="max-w-4xl mx-auto">
+            <div class="inline-block mb-4 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-semibold tracking-wide">
+                🚀 Phiên bản MVP Beta dành riêng cho sinh viên Bách Khoa
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
+                Chạy đồ án, <br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">không chạy deadline.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                Giải pháp duy nhất giúp sinh viên gom toàn bộ lịch MyBK, đồng bộ deadline từ LMS bằng AI và tự động tìm giờ rảnh chung cho nhóm chỉ trong 1 chạm.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <a href="https://forms.gle/GE1PWenAhAdvaXT67" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transform hover:-translate-y-1">
+                    Đăng ký Early Access (Chỉ 50 Slot)
+                </a>
+                <a href="#features" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-8 py-4 rounded-xl font-semibold text-lg transition-all">
+                    Xem Tính Năng
+                </a>
+            </div>
+
+            <!-- Dashboard Mockup -->
+            <div class="relative mx-auto w-full max-w-5xl mt-12 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 ring-1 ring-white/10">
+                <div class="bg-slate-800 p-3 flex items-center border-b border-slate-700">
+                    <div class="flex space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="mx-auto text-slate-400 text-sm font-mono">https://planmate-kappa.vercel.app/</div>
+                </div>
+                <div class="bg-slate-900 aspect-[2/1] flex items-center justify-center relative overflow-hidden">
+                    <img src="./img.jpg" alt="BK Calendar Dashboard" class="object-cover w-full h-full">
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-24 px-4 sm:px-6 lg:px-8 bg-slate-900/50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Giải quyết triệt để nỗi đau làm việc nhóm</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Không còn những buổi tối cãi nhau vì lệch lịch học. Không còn cảnh sót deadline vì phải check 5-6 group Zalo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="glass-card p-8 rounded-2xl transition-transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">AI Gemini Đọc Deadline</h3>
+                    <p class="text-slate-400">Chỉ cần ném ảnh chụp màn hình LMS hoặc copy paste văn bản. AI tự động bóc tách ngày tháng và cập nhật lên hệ thống. Tạm biệt việc nhập tay nhàm chán.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass-card p-8 rounded-2xl transition-transform hover:-translate-y-2 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-600 text-xs font-bold px-3 py-1 rounded-bl-lg text-white">Chí mạng</div>
+                    <div class="w-14 h-14 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Tìm Giờ Rảnh Chung</h3>
+                    <p class="text-slate-400">Hệ thống quét thời khóa biểu MyBK của tất cả thành viên trong nhóm và tự động đề xuất những khoảng thời gian 100% nhóm đều rảnh. Chốt lịch họp trong 1 click.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass-card p-8 rounded-2xl transition-transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Quản Trị Minh Bạch</h3>
+                    <p class="text-slate-400">Theo dõi thanh tiến độ dự án theo thời gian thực. Gắn cờ đỏ cảnh báo "Quá hạn" cho từng cá nhân để đảm bảo không ai có thể trốn việc.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call To Action (Form) Section -->
+    <section id="register" class="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/20 blur-[100px] rounded-full pointer-events-none"></div>
+        
+        <div class="max-w-3xl mx-auto text-center relative z-10 glass-card p-10 md:p-16 rounded-3xl border border-blue-500/20">
+            <h2 class="text-3xl md:text-5xl font-bold mb-6">Sẵn sàng tối ưu điểm GPA?</h2>
+            <p class="text-lg text-slate-300 mb-8">
+                Server hiện tại đang giới hạn tài nguyên. Chúng tôi chỉ mở cổng đăng ký sớm cho 50 bạn sinh viên đầu tiên hoàn thành khảo sát dưới đây.
+            </p>
+            
+            <a href="https://forms.gle/GE1PWenAhAdvaXT67" target="_blank" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105 w-full sm:w-auto">
+                <span>Điền Form Nhận Tài Khoản</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+            
+            <p class="mt-6 text-sm text-slate-500 flex items-center justify-center gap-2">
+                           </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900/80 py-8 px-4 text-center text-slate-500">
+        <p>© 2026 Team NoZal. Đồ án Khởi Nghiệp Tinh Gọn - ĐHQG-HCM.</p>
+    </footer>
+
+</body>
+</html>

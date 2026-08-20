@@ -39,7 +39,7 @@ export default function Login() {
         setError(null);
         setNotice(null);
         if (username.length === 0 || password.length === 0) {
-            alert("Vui lòng nhập tài khoản và mật khẩu");
+            setError("Vui lòng nhập tài khoản và mật khẩu");
             return setlogin(false);
         }
         const normalized = username.trim();
@@ -134,7 +134,13 @@ export default function Login() {
                             </div>
                         </div>
                     ) : (
-                    <form className="flex flex-col cursor-default select-none">
+                    <form
+                        className="flex flex-col cursor-default select-none"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setlogin(true);
+                        }}
+                    >
                         <div className="flex flex-col w-full">
                             <label htmlFor="username">Tên tài khoản:</label>
                             <input
@@ -181,18 +187,16 @@ export default function Login() {
                             </div>
                         )}
                         <div className="flex flex-row-reverse items-start mt-5 w-full">
-                            <div
-                                className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-white hover:cursor-pointer"
-                                onClick={() => {
-                                    setlogin(true);
-                                }}
+                            <button
+                                type="submit"
+                                className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-white hover:cursor-pointer border-0"
                             >
                                 {!login ? (
                                     <span>Đăng nhập</span>
                                 ) : (
                                     <span>Đang đăng nhập...</span>
                                 )}
-                            </div>
+                            </button>
                         </div>
                         <div className="mt-2 flex w-[95%] items-center justify-center">
                             <span className="text-sm text-slate-400">

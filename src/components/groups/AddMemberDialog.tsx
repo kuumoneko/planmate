@@ -60,6 +60,11 @@ export default function AddMemberDialog({
     useEffect(() => {
         if (!open) return;
         if (timerRef.current) clearTimeout(timerRef.current);
+        if (query.trim().length === 0) {
+            setUsers([]);
+            setError("");
+            return;
+        }
         timerRef.current = setTimeout(async () => {
             try {
                 const data = await api<{ users: DbUser[] }>(
@@ -131,10 +136,16 @@ export default function AddMemberDialog({
                             <Loader2 className="h-4 w-4 animate-spin" /> Đang tải danh sách…
                         </p>
                     ) : users.length === 0 ? (
+                        query.trim().length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                Nhập từ khóa để tìm kiếm người dùng.
+                            </p>
+                        ) : (
                             <p className="text-sm text-muted-foreground">
                                 Không tìm thấy người dùng nào (đã loại các thành viên hiện có).
                             </p>
-                        ) : (
+                        )
+                    ) : (
                             <div className="max-h-64 overflow-y-auto flex flex-col gap-1">
                             {users.map((u) => {
                                 const added = addedUsernames.has(u.username);

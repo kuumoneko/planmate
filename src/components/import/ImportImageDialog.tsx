@@ -11,81 +11,19 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Loader2, ImageIcon, ClipboardPaste } from "lucide-react";
+import {
+    MAX_IMAGE_PAYLOAD_BYTES,
+    fileToBase64,
+    prepareImage,
+} from "@/lib/image-prepare";
 
 export interface ImportResult {
     count: number;
     summary: string;
 }
 
-/** Cap longest side when scaling screenshots down before upload. */
-const MAX_DIMENSION = 2000;
-/** Refuse to upload payloads beyond this (base64 approx of the raw bytes). */
-const MAX_PAYLOAD_BYTES = 15 * 1024 * 1024;
 /** Batch limit (matches the API). */
 const MAX_IMAGES = 10;
-
-/**
- * Normalize a pasted/picked image for upload: re-encode webp/bmp/gif via
- * canvas and downscale oversized screenshots (typical 4K captures are
- * megabytes — huge base64 POSTs fail at the network layer). Small jpg/png
- * pass through untouched.
- */
-async function prepareImage(file: File): Promise<File> {
-    if (typeof document === "undefined") return file;
-    try {
-        const url = URL.createObjectURL(file);
-        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-            const el = new Image();
-            el.onload = () => resolve(el);
-            el.onerror = () => reject(new Error("Không đọc được ảnh"));
-            el.src = url;
-        });
-        const scale = Math.min(
-            1,
-            MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight)
-        );
-        if (
-            scale === 1 &&
-            (file.type === "image/png" || file.type === "image/jpeg")
-        ) {
-            URL.revokeObjectURL(url);
-            return file;
-        }
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return file;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        URL.revokeObjectURL(url);
-        const mime =
-            file.type === "image/png" ? "image/png" : "image/jpeg";
-        const blob = await new Promise<Blob | null>((resolve) =>
-            canvas.toBlob(resolve, mime, 0.9)
-        );
-        return blob
-            ? new File(
-                  [blob],
-                  mime === "image/png" ? "import.png" : "import.jpg",
-                  { type: mime }
-              )
-            : file;
-    } catch {
-        return file;
-    }
-}
-
-function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const data = String(reader.result ?? "");
-            resolve(data.slice(data.indexOf(",") + 1));
-        };
-        reader.onerror = () => reject(new Error("Không đọc được ảnh"));
-        reader.readAsDataURL(file);
-    });
-}
 
 export default function ImportImageDialog({
     open,
@@ -124,7 +62,7 @@ export default function ImportImageDialog({
             const images: { image: string; mimeType: string }[] = [];
             for (const file of files) {
                 const base64 = await fileToBase64(file);
-                if (base64.length * 0.75 > MAX_PAYLOAD_BYTES) {
+                if (base64.length * 0.75 > MAX_IMAGE_PAYLOAD_BYTES) {
                     setError(
                         "Ảnh quá lớn, hãy cắt bớt vùng thừa rồi thử lại"
                     );

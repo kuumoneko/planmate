@@ -39,6 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(403).json({ ok: false, data: "Chỉ trưởng nhóm xem danh sách người dùng" });
             }
             const q = String(req.query.q ?? "").trim();
+            if (!q) {
+                return res.status(200).json({ ok: true, data: { users: [] } });
+            }
             const users = await searchUsers(q, group.members.map((m) => m.email));
             return res.status(200).json({ ok: true, data: { users } });
         }

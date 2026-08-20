@@ -27,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskCreateDialog from "./TaskCreateDialog";
 import AddMemberDialog from "./AddMemberDialog";
+import ImportDeadlinesDialog from "./ImportDeadlinesDialog";
 import { api } from "@/utils/api";
 import { FreeTimeSlot, Group, Task } from "@/types";
 
@@ -326,9 +327,20 @@ export default function GroupView({
                             )}
                         </span>
                         {isLeader && (
-                            <TaskCreateDialog group={group} identity={identity} onCreated={(t) => {
-                                setTasks((prev) => [...(prev ?? []), t]);
-                            }} />
+                            <div className="flex gap-2">
+                                <ImportDeadlinesDialog
+                                    group={group}
+                                    identity={identity}
+                                    existingTasks={tasks ?? []}
+                                    onImported={(summary) => {
+                                        setNotice(summary);
+                                        void loadTasks();
+                                    }}
+                                />
+                                <TaskCreateDialog group={group} identity={identity} onCreated={(t) => {
+                                    setTasks((prev) => [...(prev ?? []), t]);
+                                }} />
+                            </div>
                         )}
                     </CardTitle>
                     <CardDescription>

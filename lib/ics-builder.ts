@@ -174,3 +174,67 @@ export function buildCourseCalendarIcs(
     }
     return result.value;
 }
+
+/* --------------------------- deadline (LMS + task) ------------------------ */
+
+export interface DeadlineIcsItem {
+    /** Stable id -> idempotent imports into external calendars. */
+    uid: string;
+    title: string;
+    description?: string;
+    /** "yyyy-mm-dd" (local). */
+    dueDate: string;
+    /** "HH:mm" (defaults to 23:59). */
+    dueTime?: string;
+}
+
+/** Parse a due date/time into a [y, m, d, h, min] DateArray for the ics pkg. */
+function deadlineStart(item: DeadlineIcsItem): [number, number, number, number, number] {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(item.dueDate.trim());
+    if (!match) {
+        throw new Error(`Invalid due date "${item.dueDate}" for "${item.title}"`);
+    }
+    const [, y, m, d] = match.map(Number);
+    const { hour, minute } = parseClock(item.dueTime ?? "23:59");
+    return [y, m, d, hour, minute];
+}
+
+/**
+ * Build a .ics calendar of one-shot deadline events (LMS deadlines and
+ * group task deadlines). Each event starts at the due time, lasts 60
+ * minutes and fires an alarm 1 day before the due date.
+ */
+export function buildDeadlinesIcs(
+    items: DeadlineIcsItem[],
+    options: IcsBuilderOptions = {}
+): string {
+    const events: EventAttributes[] = items.map((item) => ({
+        uid: item.uid.replace(/[^\w-]/g, ""),
+        title: item.title,
+        description: item.description ?? "",
+        start: deadlineStart(item),
+        startInputType: "local",
+        duration: { hours: 1 },
+        status: "CONFIRMED",
+        busyStatus: "BUSY",
+        alarms: [
+            {
+                action: "display",
+                description: "Nhắc deadline",
+                trigger: { minutes: 24 * 60, before: true },
+            },
+        ],
+    }));
+    const result = createEvents(events, {
+        productId: "bk-calendar",
+        calName: options.calendarName ?? "Deadlines - BK Calendar",
+    });
+
+    if (result.error) {
+        throw result.error;
+    }
+    if (result.value === null) {
+        throw new Error("Failed to generate ICS calendar");
+    }
+    return result.value;
+}

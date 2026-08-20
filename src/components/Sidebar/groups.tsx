@@ -48,17 +48,15 @@ export default function Sidebar_Groups() {
             >
                 <span className="text-sm font-medium">Nhóm học tập</span>
                 <span className="text-xs text-[#64748b] dark:text-slate-400">
-                    {groups === null
-                        ? "..."
-                        : `${groups.length} nhóm của bạn`}
+                    {groups === null ? "..." : `${groups.length} nhóm của bạn`}
                 </span>
             </a>
             <GroupCreateDialog
                 username={user?.username ?? ""}
                 onCreated={(g) => setGroups((prev) => [g, ...(prev ?? [])])}
                 trigger={
-                    <button className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-600/60 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-600">
-                        <Plus className="size-4" /> Thêm nhóm
+                    <button className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-600/60 px-3 py-1.5 text-sm text-black hover:bg-slate-600">
+                        <Plus className="size-4" /> <span>Thêm nhóm</span>
                     </button>
                 }
             />
@@ -87,9 +85,7 @@ export default function Sidebar_Groups() {
                         >
                             <p className="truncate text-sm">{g.name}</p>
                             <p className="truncate text-xs text-[#64748b] dark:text-slate-400">
-                                {g.courseName ||
-                                    g.courseCode ||
-                                    "Chưa có môn"}{" "}
+                                {g.courseName || g.courseCode || "Chưa có môn"}{" "}
                                 · {g.members.length} thành viên
                             </p>
                         </a>

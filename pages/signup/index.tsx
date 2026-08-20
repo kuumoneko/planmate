@@ -35,21 +35,21 @@ export default function Signup() {
         setError(null);
         const uname = username.trim();
         if (uname.length === 0 || /\s/.test(uname)) {
-            alert("Tên đăng nhập không hợp lệ. Không được chứa khoảng trắng.");
+            setError("Tên đăng nhập không hợp lệ. Không được chứa khoảng trắng.");
             return setsignup(false);
         }
         if (name.trim().length === 0) {
-            alert("Vui lòng nhập tên hiển thị");
+            setError("Vui lòng nhập tên hiển thị");
             return setsignup(false);
         }
         if (!PASSWORD_RULE.test(password)) {
-            alert(
+            setError(
                 "Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, số và ký tự đặc biệt (! @ # ...)."
             );
             return setsignup(false);
         }
         if (password !== confirm) {
-            alert("Mật khẩu xác nhận không khớp");
+            setError("Mật khẩu xác nhận không khớp");
             return setsignup(false);
         }
         async function run() {
@@ -82,7 +82,13 @@ export default function Signup() {
                     Đăng ký tài khoản
                 </h1>
                 <div className="login_form flex flex-col mb-auto">
-                    <form className="flex flex-col cursor-default select-none">
+                    <form
+                        className="flex flex-col cursor-default select-none"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setsignup(true);
+                        }}
+                    >
                         <div className="flex flex-col w-full">
                             <label htmlFor="username">Tên đăng nhập:</label>
                             <input
@@ -148,18 +154,16 @@ export default function Signup() {
                             </div>
                         )}
                         <div className="flex flex-row-reverse items-start mt-5 w-full">
-                            <div
-                                className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-white hover:cursor-pointer"
-                                onClick={() => {
-                                    setsignup(true);
-                                }}
+                            <button
+                                type="submit"
+                                className="bg-indigo-500 px-3 py-1.5 rounded-2xl text-white hover:cursor-pointer border-0"
                             >
                                 {!signup ? (
                                     <span>Đăng ký</span>
                                 ) : (
                                     <span>Đang đăng ký...</span>
                                 )}
-                            </div>
+                            </button>
                         </div>
                         <div className="mt-2 flex w-full items-center justify-center">
                             <span className="text-sm text-slate-400">
